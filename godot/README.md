@@ -57,3 +57,11 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - A new run starts with two `Field Dressing` items. **F** applies one to an untreated injured body part (prioritizing torso, then leg, then arm). Treatment consumes exactly one dressing, marks the wound dressed and eases its penalty; it does **not** instantly erase injuries. Sleeping gradually heals injuries and can clear the dressing once healed.
 - The Little Nest has a cooker station (walk close, **E** to eat) and a water vessel (**E** to drink). Starting supplies are **four meals and six waters**, consumed only if needed. No endless refills or required daily sortie yet; later shelter systems can provide replenishment.
 - Food/water and bandaging status are validated and saved with the condition. No HP bar, arbitrary panic, or cloud inference.
+
+## P2c — character voice, accessible subtitles and ordinary tics
+
+- Yuna's self-talk is **authored** and only fires from facts she experienced: a robot spotting her, injuries, a dangerous escape, scavenging, workbench crafting, successful repair, safe return, bed rest, first aid and home meals/water. No AI API, guessing unseen secrets, or generated dialogue.
+- Independent `YunaVoice` applies priorities, global and per-event cooldowns, and rotating alternate authored lines. Threat/injury can preempt incidental thoughts; everyday comments never interrupt urgent warnings.
+- Spoken text appears in a bottom subtitle with no audio/TTS dependency. **V** toggles incidental remarks while urgent warning events remain eligible. **B** toggles the subtitle display; critical gameplay feedback still appears in the existing HUD. Settings persist in the versioned save v7.
+- Ordinary brief shoulder/strap tics continue whether she is calm or distressed. They are purely visual, not tied to stress, stealth detection, AI hearing or a random scream. Further art/animation variety is planned later.
+- Added pure scheduler and real-scene tests for subtitle visibility, workbench speech, priority/cooldown, settings restore and calm/distressed tic independence.
