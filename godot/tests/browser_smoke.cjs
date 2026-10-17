@@ -92,6 +92,31 @@ async function walk(page, keys, milliseconds) {
   await page.waitForTimeout(250);
 }
 
+async function walkTo(page, target, label) {
+  // Chromium SwiftShader on a shared CI runner doesn't run every Godot frame
+  // at native speed. Physics movement must be measured from actual saved
+  // coordinates, never inferred from wall-clock key-hold duration.
+  for (let step = 0; step < 17; step++) {
+    await saveUsingButton(page);
+    const current = await expectSave(page, label + ' current position', s =>
+      s.current_level === 'mesa_depth');
+    const [x, y] = current.mesa_depth_position;
+    const dx = target[0] - x;
+    const dy = target[1] - y;
+    const remaining = Math.hypot(dx, dy);
+    console.log(label + ' walk step ' + step + ':', [x, y], 'remaining', remaining.toFixed(1));
+    if (remaining < 42) return current;
+    const horizontal = Math.abs(dx) > Math.abs(dy);
+    const key = horizontal ? (dx < 0 ? 'a' : 'd') : (dy < 0 ? 'w' : 's');
+    const amount = Math.abs(horizontal ? dx : dy);
+    // Small axis-aligned corrections avoid overshoot and cradle collisions.
+    const holdMs = Math.max(260, Math.min(1000, Math.round(amount * 6)));
+    await page.locator('canvas').click({position: {x: 640, y: 355}});
+    await walk(page, [key], holdMs);
+  }
+  throw new Error(label + ': could not walk within reach of ' + JSON.stringify(target));
+}
+
 async function saveUsingButton(page) {
   await page.mouse.click(1200, 38); // Godot CanvasLayer/SaveButton, not a DOM mock.
   await page.waitForTimeout(1100);
@@ -226,17 +251,12 @@ async function overwritePersistedSaveFromSeedPage(context, snapshot) {
     assert.equal(observed.current_level, 'mesa_depth');
     console.log('PASS: actual WebGL2 lower-gallery E discovered only witnessed archive');
 
-    // Walk diagonally through the lower chamber to the regulator using
-    // actual movement keys rather than directly manipulating game state.
-    await walk(page, ['a', 's'], 1200);
-    await saveUsingButton(page);
-    const approached = await expectSave(page, 'Walked toward regulator', s =>
-      s.current_level === 'mesa_depth' && s.mesa_depth_position[0] < 520 &&
-      s.mesa_depth_position[1] > 300);
+    // Navigate by the *real* persisted 2D position on the slow SwiftShader
+    // renderer; frame throughput is different from desktop/native Godot.
+    const approached = await walkTo(page, [415, 390], 'Regulator');
     assert(Math.hypot(approached.mesa_depth_position[0] - 415,
       approached.mesa_depth_position[1] - 390) < 62,
-      'Actual Yuna movement failed to reach the regulator: ' +
-      JSON.stringify(approached.mesa_depth_position));
+      'Real browser Yuna failed to reach the regulator');
     await page.locator('canvas').click({position: {x: 640, y: 350}});
     await pressKey(page, 'e');
     const warmed = await expectSave(page, 'Real E warm regulator', s =>
@@ -257,9 +277,8 @@ async function overwritePersistedSaveFromSeedPage(context, snapshot) {
 
     // Physically leave through the lower service lift, then assert the intact
     // separate upstairs level and retained warmth through another real save.
-    await page.locator('canvas').click({position: {x: 640, y: 350}});
-    await walk(page, ['a', 's'], 1100);
-    await walk(page, ['a'], 850);
+    await walkTo(page, [125, 493], 'Return lift');
+    await page.locator('canvas').click({position: {x: 640, y: 355}});
     await pressKey(page, 'e');
     await saveUsingButton(page);
     const upstairs = await expectSave(page, 'Real E from depth to main Mesa', s =>
