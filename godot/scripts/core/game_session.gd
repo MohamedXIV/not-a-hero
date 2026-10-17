@@ -3,7 +3,8 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 8
+const SAVE_VERSION: int = 9
+const HOME_SUPPLY_CAP: int = 12
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -15,6 +16,7 @@ var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
 var decor: ShelterDecorState = ShelterDecorState.new()
+var production: HomeProduction = HomeProduction.new()
 var condition: YunaCondition = YunaCondition.new()
 var voice: YunaVoice = YunaVoice.new()
 var home_supplies: Dictionary = {"meals": 4, "water": 6}
@@ -34,6 +36,7 @@ func _ready() -> void:
 func advance_time(delta: float) -> void:
     # Approximate 24 real minutes per in-game day, provisional balance.
     day_minutes = fposmod(day_minutes + delta, 1440.0)
+    production.advance(delta)
     voice.tick(delta)
 
 
@@ -71,10 +74,57 @@ func drink_at_home() -> bool:
     return true
 
 
+func collect_condensed_water() -> bool:
+    if current_level != "shelter" or int(home_supplies["water"]) >= HOME_SUPPLY_CAP:
+        report("The clean-water canister is full, Yuna.")
+        return false
+    if not production.take_water():
+        report("Still condensing. Give it some time, Yuna.")
+        return false
+    home_supplies["water"] = int(home_supplies["water"]) + 1
+    report("Another clean water portion. Nice and steady.")
+    return true
+
+
+func harvest_culture() -> bool:
+    if current_level != "shelter" or int(home_supplies["meals"]) >= HOME_SUPPLY_CAP:
+        report("No space for more prepared food, Yuna.")
+        return false
+    if production.ready_culture <= 0:
+        report("The nutrient culture isn't ready, Yuna.")
+        return false
+    # Commit only once every destination is known to have capacity.
+    if not bag.try_receive({"fiber": 1}):
+        report("Bag's full. Make room for the culture fibers, Yuna.")
+        return false
+    production.take_culture()
+    home_supplies["meals"] = int(home_supplies["meals"]) + 1
+    report("Food and useful fibers. Two things from one tiny garden.")
+    return true
+
+
+func unwind_at_home() -> bool:
+    if current_level != "shelter" or not production.can_unwind():
+        report("You've only just had a quiet moment, Yuna.")
+        return false
+    if condition.composure >= 92.0 and condition.fatigue <= 10.0:
+        report("You're already settled. Enjoy the quiet, Yuna.")
+        return false
+    condition.composure = minf(100.0, condition.composure + 16.0)
+    condition.fatigue = maxf(0.0, condition.fatigue - 6.0)
+    production.mark_unwind()
+    production.advance(20.0)
+    day_minutes = fposmod(day_minutes + 20.0, 1440.0)
+    speak(&"quiet_ritual")
+    report("A few minutes by the radio. The world can wait.")
+    return true
+
+
 func sleep_at_home() -> void:
     condition.rest_at_home()
     speak(&"rested")
     day_minutes = fposmod(day_minutes + 360.0, 1440.0)
+    production.advance(360.0)
     report("Good. You needed that, Yuna.")
 
 
@@ -111,6 +161,7 @@ func snapshot() -> Dictionary:
         "inventory": bag.snapshot(),
         "storage": storage.snapshot(),
         "shelter_decor": decor.items(),
+        "home_production": production.snapshot(),
         "condition": condition.snapshot(),
         "voice_settings": voice.settings_snapshot(),
         "home_supplies": home_supplies.duplicate(true),
@@ -150,6 +201,12 @@ func restore_snapshot(data: Dictionary) -> bool:
     var restored_decor := ShelterDecorState.new()
     if not restored_decor.restore_snapshot(data.get("shelter_decor", null)):
         return false
+    var raw_production: Variant = data.get("home_production", null)
+    if typeof(raw_production) != TYPE_DICTIONARY:
+        return false
+    var restored_production := HomeProduction.new()
+    if not restored_production.restore_snapshot(raw_production as Dictionary):
+        return false
     var raw_condition: Variant = data.get("condition")
     if typeof(raw_condition) != TYPE_DICTIONARY:
         return false
@@ -166,7 +223,7 @@ func restore_snapshot(data: Dictionary) -> bool:
             return false
         if not is_finite(float(quantity)) or float(quantity) != float(int(quantity)):
             return false
-        if int(quantity) < 0 or int(quantity) > 50:
+        if int(quantity) < 0 or int(quantity) > HOME_SUPPLY_CAP:
             return false
         restored_supplies[supply_id] = int(quantity)
     var raw_voice: Variant = data.get("voice_settings")
@@ -204,6 +261,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     bag = restored_bag
     storage = restored_storage
     decor = restored_decor
+    production = restored_production
     condition = restored_condition
     voice = restored_voice
     home_supplies = restored_supplies
