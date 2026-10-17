@@ -1,9 +1,11 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/mesa/mesa_refuge.gd" id="1_refuge"]
 [ext_resource type="PackedScene" path="res://scenes/actors/yuna.tscn" id="2_yuna"]
 
 [ext_resource type="PackedScene" path="res://scenes/interiors/shelter_decorator.tscn" id="3_decor"]
+
+[ext_resource type="PackedScene" path="res://scenes/interiors/mesa_rear_nook.tscn" id="4_nook"]
 
 [node name="MesaRefuge" type="Node2D"]
 script = ExtResource("1_refuge")
@@ -15,3 +17,5 @@ color = Color(0.3, 0.36, 0.42, 1)
 
 [node name="ShelterDecorator" parent="." instance=ExtResource("3_decor")]
 location_id = "mesa"
+
+[node name="RearNook" parent="." instance=ExtResource("4_nook")]
