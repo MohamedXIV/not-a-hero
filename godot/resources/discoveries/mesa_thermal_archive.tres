@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DiscoveryDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/discovery/discovery_definition.gd" id="1_discovery"]
+
+[resource]
+script = ExtResource("1_discovery")
+discovery_id = &"mesa_thermal_archive"
+title = "An empty warm enclosure"
+observation = "Behind the lower service lift is a sealed, empty climate cradle. Its regulator still cycles to protect a very narrow temperature band; old service traces show repeated checks, not weapons targeting. Nothing here says what was inside or who ordered its care."
+hypothesis = "Something fragile might once have needed these conditions. An ancient machine routine could still be checking for it, but an empty cradle doesn't prove what lived here."
+personal_plan = "You can restore warmth, Yuna, then leave it in peace—or turn it off again if you need to."
+bark_event = &"mesa_thermal_archive"
