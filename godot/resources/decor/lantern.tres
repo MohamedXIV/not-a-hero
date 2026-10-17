@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DecorDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/interiors/decor_definition.gd" id="1_decor"]
+[ext_resource type="Resource" path="res://resources/items/lantern.tres" id="2_item"]
+[resource]
+script = ExtResource("1_decor")
+kind_id = &"lantern"
+inventory_item = ExtResource("2_item")
+display_name = "Little Warm Lantern"
+footprint = Vector2(24, 24)
+tint = Color(0.93, 0.73, 0.43, 1)
+obstructs_movement = true
+emits_light = true
