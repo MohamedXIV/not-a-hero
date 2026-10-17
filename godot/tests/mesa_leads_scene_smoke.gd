@@ -54,8 +54,17 @@ func _check() -> void:
     if not GameSession.load_from_disk("user://nah_p3d_mesa_leads.json"):
         _fail("Observed lead state couldn't be restored from file")
         return
-    if GameSession.notebook.mesa_leads() != ["eastern_service"] or GameSession.snapshot() != saved:
-        _fail("Service interpretation differs after disk reload")
+    if GameSession.notebook.mesa_leads() != ["eastern_service"]:
+        _fail("Service route knowledge was lost after disk reload: %s" % str(GameSession.notebook.mesa_leads()))
+        return
+    if GameSession.snapshot() != saved:
+        var after: Dictionary = GameSession.snapshot()
+        for key: Variant in saved.keys():
+            if after.get(key) != saved[key]:
+                print("DIAGNOSTIC: save field changed on reload: %s; before=%s; after=%s" % [
+                    str(key), str(saved[key]).left(550), str(after.get(key)).left(550)
+                ])
+        _fail("Session fields differ after mesa lead disk reload")
         return
 
     yuna.position = Vector2(325, 320)
