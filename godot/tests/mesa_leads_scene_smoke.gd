@@ -57,17 +57,25 @@ func _check() -> void:
     if GameSession.notebook.mesa_leads() != ["eastern_service"]:
         _fail("Service route knowledge was lost after disk reload: %s" % str(GameSession.notebook.mesa_leads()))
         return
-    # Floats in condition change their least-significant bits when serialized
-    # through Godot's JSON file. Compare against the canonical persisted form.
+    # JSON encodes all numbers as JSON number; Godot's loader then restores
+    # typed ints and other normalized states. Compare the FULL restored state
+    # against a separate independently restored baseline, not the raw JSON.
     var canonical_saved: Dictionary = JSON.parse_string(JSON.stringify(saved)) as Dictionary
-    if GameSession.snapshot() != canonical_saved:
+    var check_session: Node = (load("res://scripts/core/game_session.gd") as GDScript).new() as Node
+    if not check_session.call("restore_snapshot", canonical_saved):
+        _fail("Canonical disk save could not restore into independent session")
+        check_session.free()
+        return
+    var expected: Dictionary = check_session.call("snapshot")
+    check_session.free()
+    if GameSession.snapshot() != expected:
         var after: Dictionary = GameSession.snapshot()
-        for key: Variant in saved.keys():
-            if after.get(key) != canonical_saved[key]:
-                print("DIAGNOSTIC: save field changed on reload: %s; before=%s; after=%s" % [
-                    str(key), str(canonical_saved[key]).left(550), str(after.get(key)).left(550)
+        for key: Variant in expected.keys():
+            if after.get(key) != expected[key]:
+                print("DIAGNOSTIC: normalized save field changed on reload: %s; before=%s; after=%s" % [
+                    str(key), str(expected[key]).left(550), str(after.get(key)).left(550)
                 ])
-        _fail("Session fields differ after mesa lead disk reload")
+        _fail("Session fields differ after canonical mesa lead disk reload")
         return
 
     yuna.position = Vector2(325, 320)
