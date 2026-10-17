@@ -5,7 +5,7 @@ signal transition_requested(destination: String)
 
 const LightFactory = preload("res://scripts/presentation/light_factory.gd")
 const EXIT_POINT: Vector2 = Vector2(125, 493)
-const ARCHIVE_POINT: Vector2 = Vector2(590, 224)
+const ARCHIVE_POINT: Vector2 = Vector2(590, 344)
 const REGULATOR_POINT: Vector2 = Vector2(415, 390)
 const REST_POINT: Vector2 = Vector2(632, 440)
 const RADIUS: float = 62.0
@@ -13,6 +13,7 @@ const SERVICE_MINUTES: float = 20.0
 
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var ambient: CanvasModulate = $Ambient
+var _interact_held: bool = false
 var _cradle_light: PointLight2D
 var _utility_light: PointLight2D
 
@@ -39,7 +40,7 @@ func _ready() -> void:
     _cradle_light.color = Color("#edb48e")
     add_child(_cradle_light)
     # Service walls and a real solid protected cradle, not a fake backdrop.
-    _add_collision(Rect2(688, 136, 60, 160))
+    _add_collision(Rect2(488, 138, 244, 178))
     _add_collision(Rect2(309, 140, 82, 60))
     _refresh()
 
@@ -61,7 +62,10 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
     GameSession.mesa_depth_position = yuna.position
-    if Input.is_action_just_pressed("interact"):
+    if not Input.is_action_pressed("interact"):
+        _interact_held = false
+    if Input.is_action_just_pressed("interact") and not _interact_held:
+        _interact_held = true
         _interact_nearby()
 
 
@@ -138,7 +142,10 @@ func _draw() -> void:
     # dictated identity. Who built this and what was here remain unknown.
     draw_arc(Vector2(608, 218), 48, 0.0, TAU, 40,
         Color("#edcba5") if GameSession.mesa.depth_warm else Color("#90a5aa"), 6.0)
-    draw_circle(ARCHIVE_POINT, 12, Color("#b0cbd3"))
+    # The visible log terminal is OUTSIDE the protected enclosure. Yuna
+    # needs to approach it rather than magically occupying its solid interior.
+    draw_rect(Rect2(ARCHIVE_POINT - Vector2(25, 15), Vector2(50, 30)), Color("#314b51"))
+    draw_circle(ARCHIVE_POINT, 10, Color("#b0cbd3"))
     draw_rect(Rect2(REGULATOR_POINT - Vector2(35, 23), Vector2(70, 46)),
         Color("#335960"))
     draw_circle(REGULATOR_POINT, 12,

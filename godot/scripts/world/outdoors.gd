@@ -8,6 +8,7 @@ const HATCH_POSITION: Vector2 = Vector2(160.0, 330.0)
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var ambient: CanvasModulate = $Ambient
 @onready var streamer: Node2D = $WorldStreamer
+var _interact_held: bool = false
 
 
 func _ready() -> void:
@@ -29,7 +30,10 @@ func _process(_delta: float) -> void:
     GameSession.outdoor_position = yuna.position
     _sync_chunks()
     _apply_daylight()
-    if Input.is_action_just_pressed("interact"):
+    if not Input.is_action_pressed("interact"):
+        _interact_held = false
+    if Input.is_action_just_pressed("interact") and not _interact_held:
+        _interact_held = true
         _try_interaction()
     if Input.is_action_just_pressed("mesa_repair"):
         _try_mesa_fuse()

@@ -167,9 +167,11 @@ func _check() -> void:
     yuna.position = room.EXIT_POINT
     for i: int in range(45):
         await get_tree().process_frame
-    await _tap(KEY_E)
+    # Hold E beyond the Main transition cooldown and echo a browser-like
+    # key repeat. It must not immediately descend back into the lower lift.
+    await _hold_exit_with_repeat()
     if GameSession.current_level != "mesa":
-        _fail("Returning to the Mesa from below failed after a real restart")
+        _fail("Held/repeating E bounced right back from the upper Mesa lift")
         return
     room = main.get("_level") as Node2D
     if room.get_node_or_null("RearNook") == null or room.get_node_or_null("ShelterDecorator") == null:
@@ -208,6 +210,29 @@ func _check() -> void:
     _restore_save()
     print("PASS: real Main E lift, new playable level, unobserved archival secret, warm/cold rest, optional shortcut and v17 disk return")
     get_tree().quit(0)
+
+
+func _hold_exit_with_repeat() -> void:
+    var down := InputEventKey.new()
+    down.physical_keycode = KEY_E
+    down.pressed = true
+    Input.parse_input_event(down)
+    await get_tree().process_frame
+    await get_tree().process_frame
+    await get_tree().create_timer(0.65).timeout
+    var repeated := InputEventKey.new()
+    repeated.physical_keycode = KEY_E
+    repeated.pressed = true
+    repeated.echo = true
+    Input.parse_input_event(repeated)
+    await get_tree().process_frame
+    await get_tree().process_frame
+    var up := InputEventKey.new()
+    up.physical_keycode = KEY_E
+    up.pressed = false
+    Input.parse_input_event(up)
+    await get_tree().process_frame
+    await get_tree().process_frame
 
 
 func _tap(key: Key) -> void:
