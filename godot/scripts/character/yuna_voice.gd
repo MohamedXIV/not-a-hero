@@ -60,6 +60,11 @@ const BARKS: Dictionary = {
         "lines": ["Something warm. Good thinking, Yuna.",
                   "You remembered to eat, Yuna. Progress."]
     },
+    "quiet_ritual": {
+        "priority": 28, "cooldown": 80.0,
+        "lines": ["There. A little quiet, Yuna. You've earned it.",
+                  "Just the radio and you. That's enough for now, Yuna."]
+    },
     "drank": {
         "priority": 20, "cooldown": 38.0,
         "lines": ["Water. Sensible, Yuna. Very sensible.",
