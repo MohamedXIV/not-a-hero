@@ -33,6 +33,12 @@ func _process(delta: float) -> void:
         GameSession.bag.quantity(&"wire"),
         GameSession.bag.quantity(&"relay_fuse")
     ]
+    if GameSession.current_level == "outdoors":
+        var selected: String = str(GameSession.combat_state.get("selected", "pistol"))
+        var ammo: Dictionary = GameSession.combat_state.get(selected, {})
+        _hud.text += "\n1 Pistol | 2 Rifle | Click fire | R reload — %s %d/%d" % [
+            selected.capitalize(), int(ammo.get("clip", 0)), int(ammo.get("reserve", 0))
+        ]
     if GameSession.current_feedback() != "":
         _hud.text += "\n" + GameSession.current_feedback()
     if Time.get_ticks_msec() < _save_message_until:

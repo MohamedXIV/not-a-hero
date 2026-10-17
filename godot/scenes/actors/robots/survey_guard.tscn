@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/actors/robots/survey_guard.gd" id="1_guard"]
+
+[sub_resource type="CircleShape2D" id="1_collider"]
+radius = 18.0
+
+[node name="SurveyGuard" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1 | 2
+script = ExtResource("1_guard")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1_collider")

@@ -7,9 +7,28 @@ extends CharacterBody2D
 
 var _facing_right: bool = true
 var _walking: bool = false
+var _stagger_left: float = 0.0
+var hits_taken: int = 0
 
 
-func _physics_process(_delta: float) -> void:
+func _ready() -> void:
+    add_to_group("yuna_actor")
+
+
+func receive_robot_hit() -> void:
+    if _stagger_left > 0.0:
+        return
+    hits_taken += 1
+    _stagger_left = 0.65
+    GameSession.report("Ow! Move, Yuna. Find cover!")
+
+
+func is_staggered() -> bool:
+    return _stagger_left > 0.0
+
+
+func _physics_process(delta: float) -> void:
+    _stagger_left = maxf(0.0, _stagger_left - delta)
     var direction: Vector2 = Input.get_vector(
         "move_left", "move_right", "move_up", "move_down"
     )
@@ -19,6 +38,8 @@ func _physics_process(_delta: float) -> void:
     var speed: float = walking_speed
     if Input.is_action_pressed("sprint"):
         speed *= sprint_multiplier
+    if _stagger_left > 0.0:
+        speed *= 0.55
     velocity = direction * speed
     move_and_slide()
     queue_redraw()
