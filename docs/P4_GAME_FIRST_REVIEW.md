@@ -1,6 +1,6 @@
 # P4 Game-First Review — evidence and remaining acceptance
 
-**Status:** engineering-led review, 17 October 2026, after merged P4f PR #27. This is **not** a human blind playtest, a paced 1–3h run, or an art-direction sign-off. No final Mesa secret is approved here. Re-evaluate after human play.
+**Status:** engineering-led review originally authored 17 October 2026, after P4f PR #27; browser acceptance updated after P5 PR #29. This is **not** a human blind playtest, a paced 1–3h run, or an art-direction sign-off. No final Mesa secret is approved here. Re-evaluate after human play.
 
 ## The journey as a player can actually experience it
 
@@ -28,7 +28,7 @@
 **Acceptance still missing:**
 - A proper *in-engine moving art comparison* and measured legibility at the actual camera/viewport, especially Mesa hatch, basin overlapped markers, lift, regulator and narrator-less home tasks.
 - A measured first-time playthrough against the ~1–3h target (including dead time, injuries, repair stage repetitions and navigation).
-- Actual browser WebGL2 + IndexedDB **v17** persistence with a page reload while downstairs; existing Godot compatibility renderer smokes don't exercise Chromium IndexedDB.
+- **Chromium WebGL2 + IndexedDB v17 has now passed** on [P5 PR #29](https://github.com/MohamedXIV/not-a-hero/pull/29) ([exact-head browser run](https://github.com/MohamedXIV/not-a-hero/actions/runs/39072221346)): genuine fresh-game move/save/reload; seeded coherent lower-level saves with real E archive, regulator and exit interactions; downstairs reload; actual upper-level return. This is NOT an unassisted full-route browser run or human playtest. See [P5 baseline](P5_BROWSER_VISUAL_BASELINE.md).
 - An explicit conscious design decision on whether the first chosen night + optional warm archive is enough closure and on the depth of the Mesa's still-unknown secret; don't invent a lore reveal as an engineering completion trick.
 - User/author judgment of story tone, human-machine confrontation frequency and quality of optional activity after the one-time milestones.
 
