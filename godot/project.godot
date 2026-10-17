@@ -1,0 +1,27 @@
+; Engine configuration file.
+; Godot 4.7.2 stable is the current target for this early foundation.
+; Edit from Godot editor when changing settings.
+
+config_version=5
+
+[application]
+
+config/name="Not a Hero"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+
+[autoload]
+
+GameSession="*res://scripts/core/game_session.gd"
