@@ -77,11 +77,14 @@ func _physics_process(delta: float) -> void:
         _target = get_tree().get_first_node_in_group("yuna_actor") as CharacterBody2D
     var seen: bool = GameSession.current_level == "outdoors" and has_line_of_sight(_target)
     if seen:
+        if state != &"pursue":
+            GameSession.speak(&"enemy_spotted")
         GameSession.condition.apply_pressure(delta)
         _last_known_position = _target.global_position
         _search_remaining = 3.5
         state = &"pursue"
     elif state == &"pursue":
+        GameSession.speak(&"escaped")
         state = &"investigate"
     if state == &"investigate":
         _search_remaining -= delta

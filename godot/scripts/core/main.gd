@@ -7,6 +7,7 @@ const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_she
 var _level: Node2D
 var _hud: Label
 var _status_detail: Label
+var _subtitle: Label
 var _save_button: Button
 var _save_message: String = ""
 var _save_message_until: int = 0
@@ -30,6 +31,14 @@ func _process(delta: float) -> void:
     if Input.is_action_just_pressed("field_dressing"):
         if GameSession.use_field_dressing():
             GameSession.save_to_disk()
+    if Input.is_action_just_pressed("voice_toggle"):
+        GameSession.voice.incidental_enabled = not GameSession.voice.incidental_enabled
+        GameSession.report("Incidental self-talk: %s" % ("on" if GameSession.voice.incidental_enabled else "off"))
+        GameSession.save_to_disk()
+    if Input.is_action_just_pressed("subtitle_toggle"):
+        GameSession.voice.subtitles_enabled = not GameSession.voice.subtitles_enabled
+        GameSession.report("Self-talk subtitles: %s" % ("on" if GameSession.voice.subtitles_enabled else "off"))
+        GameSession.save_to_disk()
     if Input.is_action_just_pressed("quick_save"):
         _write_save()
     var hour: int = int(GameSession.day_minutes / 60.0)
@@ -71,6 +80,14 @@ func _process(delta: float) -> void:
             int(GameSession.home_supplies["meals"]),
             int(GameSession.home_supplies["water"]),
         ]
+        _status_detail.text += "\nV: Incidental remarks %s  |  B: Subtitles %s" % [
+            "On" if GameSession.voice.incidental_enabled else "Off",
+            "On" if GameSession.voice.subtitles_enabled else "Off",
+        ]
+    var spoken: String = GameSession.voice.subtitle()
+    _subtitle.visible = not spoken.is_empty()
+    if _subtitle.visible:
+        _subtitle.text = "Yuna: " + spoken
     if GameSession.current_feedback() != "":
         _hud.text += "\n" + GameSession.current_feedback()
     if Time.get_ticks_msec() < _save_message_until:
@@ -99,6 +116,8 @@ func _on_transition(target: String) -> void:
         return
     _last_transition_msec = now
     _open_level(target)
+    if target == "shelter":
+        GameSession.speak(&"home_return")
     GameSession.save_to_disk()
 
 
@@ -117,6 +136,22 @@ func _build_hud() -> void:
     _status_detail.add_theme_color_override("font_color", Color("#f5dfba"))
     _status_detail.visible = false
     overlay.add_child(_status_detail)
+
+    _subtitle = Label.new()
+    _subtitle.name = "YunaSubtitle"
+    var viewport_size: Vector2 = get_viewport_rect().size
+    _subtitle.position = Vector2(180.0, viewport_size.y - 98.0)
+    _subtitle.size = Vector2(viewport_size.x - 360.0, 75.0)
+    _subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _subtitle.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    _subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _subtitle.add_theme_font_size_override("font_size", 23)
+    _subtitle.add_theme_color_override("font_color", Color("#ffe5c4"))
+    _subtitle.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.95))
+    _subtitle.add_theme_constant_override("shadow_offset_x", 2)
+    _subtitle.add_theme_constant_override("shadow_offset_y", 2)
+    _subtitle.visible = false
+    overlay.add_child(_subtitle)
 
     # Genuine save control; browser keys such as F5 may trigger a page reload.
     _save_button = Button.new()

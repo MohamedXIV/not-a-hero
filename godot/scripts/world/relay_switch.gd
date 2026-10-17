@@ -32,6 +32,7 @@ func interact() -> bool:
         return false
     is_active = true
     GameSession.set_world_flag(persistent_id, true)
+    GameSession.speak(&"repair_success")
     GameSession.report("It works. You actually fixed it.")
     _sync_visuals()
     return true

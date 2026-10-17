@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 6
+const SAVE_VERSION: int = 7
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -15,6 +15,7 @@ var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
 var condition: YunaCondition = YunaCondition.new()
+var voice: YunaVoice = YunaVoice.new()
 var home_supplies: Dictionary = {"meals": 4, "water": 6}
 var combat_state: Dictionary = {
     "selected": "pistol",
@@ -32,6 +33,7 @@ func _ready() -> void:
 func advance_time(delta: float) -> void:
     # Approximate 24 real minutes per in-game day, provisional balance.
     day_minutes = fposmod(day_minutes + delta, 1440.0)
+    voice.tick(delta)
 
 
 func use_field_dressing() -> bool:
@@ -43,6 +45,7 @@ func use_field_dressing() -> bool:
         report("You need a field dressing, Yuna.")
         return false
     condition.apply_dressing(part)
+    speak(&"care_applied")
     report("Easy. That's the %s dressed. Rest when you can." % part)
     return true
 
@@ -52,6 +55,7 @@ func eat_at_home() -> bool:
         report("No meal needed or prepared, Yuna.")
         return false
     home_supplies["meals"] = int(home_supplies["meals"]) - 1
+    speak(&"ate")
     report("A warm meal. Nice work, Yuna.")
     return true
 
@@ -61,14 +65,20 @@ func drink_at_home() -> bool:
         report("Not thirsty, or the water canister's empty.")
         return false
     home_supplies["water"] = int(home_supplies["water"]) - 1
+    speak(&"drank")
     report("Water first. Think clearly, Yuna.")
     return true
 
 
 func sleep_at_home() -> void:
     condition.rest_at_home()
+    speak(&"rested")
     day_minutes = fposmod(day_minutes + 360.0, 1440.0)
     report("Good. You needed that, Yuna.")
+
+
+func speak(event_id: StringName) -> bool:
+    return voice.offer(event_id)
 
 
 func report(message: String) -> void:
@@ -100,6 +110,7 @@ func snapshot() -> Dictionary:
         "inventory": bag.snapshot(),
         "storage": storage.snapshot(),
         "condition": condition.snapshot(),
+        "voice_settings": voice.settings_snapshot(),
         "home_supplies": home_supplies.duplicate(true),
         "combat_state": combat_state.duplicate(true),
     }
@@ -153,6 +164,12 @@ func restore_snapshot(data: Dictionary) -> bool:
         if int(quantity) < 0 or int(quantity) > 50:
             return false
         restored_supplies[supply_id] = int(quantity)
+    var raw_voice: Variant = data.get("voice_settings")
+    if typeof(raw_voice) != TYPE_DICTIONARY:
+        return false
+    var restored_voice := YunaVoice.new()
+    if not restored_voice.restore_settings(raw_voice as Dictionary):
+        return false
     var stored_combat: Variant = data.get("combat_state", null)
     if typeof(stored_combat) != TYPE_DICTIONARY:
         return false
@@ -182,6 +199,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     bag = restored_bag
     storage = restored_storage
     condition = restored_condition
+    voice = restored_voice
     home_supplies = restored_supplies
     combat_state = next_combat
     return true
