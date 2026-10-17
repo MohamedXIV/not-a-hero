@@ -107,3 +107,11 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - During an active shift, an optional spare **alloy** (Foundry) or **coolant filter** (Basin) can be collected **once per region per shift**. Overflowing carry capacity never marks the loot collected; chunk unload/reload, repeat clicking or save/reload never duplicates it. This is bounded optional content, not critical progression or a hidden clue.
 - State persistence is **O(regions)** (last claim per region, not one world flag per event epoch). Save schema v11 validates elapsed minutes/claims atomically. Authored clue locations and existing static salvage caches are unchanged.
 - The two event nodes use existing non-hostile robot scenes and are intentionally a narrow ecology foundation, not a claim that rival machines fight one another or a complete simulated society.
+
+## P3d — two evidence-based ways to suspect the eastern stone shelf
+
+- Two hand-placed, fixed and inspectable engineering artifacts: the **Eastbound Feeder** in Cable Forest and **Buried Return Manifold** in Coolant Basin. Both are distinct machine structures rather than random loot, quest arrows or automatically awarded notes.
+- Yuna can deduce an *uncertain* possible eastern-shelf installation via **either independent route**: warm Ash Flats conduit + eastbound Cable feeder (power route), **or** Dead Foundry shift-cycle press + buried Basin return manifold (service route). Each route needs just two witnessed observations, in either order. One clue alone reveals no route and nothing provides a door location, access code or obligation to go there.
+- Existing older clue connections are unchanged. Notebook `available_connections`/ `mesa_leads` are authored data associations; on-screen journal shows only conclusions related to the currently open entry. No hidden clues or synthesized page information from an unvisited biome.
+- The small articulated silhouettes of these two artifacts are provisional engineering markers (feeder bus vs pipe header), pending P5 art. P4 owns the *physical* eastern mesa site, its approach choices and actual opening sequence; these observations never gate P4 entry.
+- Automated tests validate both real in-world inspection routes, distinct observation order, no unseen fact leaks, streamer reload, disk save and scoped notebook UI, plus all older regressions.

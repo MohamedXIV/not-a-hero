@@ -3,6 +3,7 @@ extends Node2D
 ## Does not dispense quest markers or procedural critical clues.
 
 @export var discovery: DiscoveryDefinition
+@export_range(0, 2) var visual_style: int = 0 # 0: generic, 1: feeder, 2: pipe manifold
 
 
 func _ready() -> void:
@@ -33,7 +34,16 @@ func interact() -> bool:
 
 func _draw() -> void:
     # Provisional physical artifact; geometry is authored, not RNG-populated.
-    draw_rect(Rect2(-30, -16, 60, 29), Color("#4d5554"))
-    draw_line(Vector2(-26, 2), Vector2(26, 2), Color("#a5b7a1"), 4.0)
+    if visual_style == 1:
+        draw_rect(Rect2(-28, -23, 56, 40), Color("#3c5558"))
+        for y: int in [-12, 0, 12]:
+            draw_line(Vector2(-24, y), Vector2(24, y - 4), Color("#a2b8af"), 4.0)
+    elif visual_style == 2:
+        draw_rect(Rect2(-31, -17, 62, 32), Color("#3c626c"))
+        draw_arc(Vector2.ZERO, 18.0, PI, TAU, 18, Color("#83b5c4"), 5.0)
+        draw_line(Vector2(-29, 4), Vector2(29, 4), Color("#adcbd0"), 5.0)
+    else:
+        draw_rect(Rect2(-30, -16, 60, 29), Color("#4d5554"))
+        draw_line(Vector2(-26, 2), Vector2(26, 2), Color("#a5b7a1"), 4.0)
     draw_circle(Vector2(12, -5), 5.0, Color("#9fd2c4") if (discovery != null
         and GameSession.notebook.knows(String(discovery.discovery_id))) else Color("#bb8b65"))

@@ -9,6 +9,8 @@ const DEFINITIONS: Dictionary = {
     "cable_scarred_junction": preload("res://resources/discoveries/cable_scarred_junction.tres"),
     "foundry_shift_cycle": preload("res://resources/discoveries/foundry_shift_cycle.tres"),
     "basin_reverse_flow": preload("res://resources/discoveries/basin_reverse_flow.tres"),
+    "cable_eastbound_feeder": preload("res://resources/discoveries/cable_eastbound_feeder.tres"),
+    "basin_return_manifold": preload("res://resources/discoveries/basin_return_manifold.tres"),
 }
 
 var _seen: Array[String] = []
@@ -41,13 +43,68 @@ func pin(id: String) -> bool:
     return true
 
 
+# Connections are authored hypotheses, not discovered-object unlocks.
+# Each mesa lead is independent and requires only two guaranteed physical clues;
+# neither path establishes a door, a code or certain ownership of the site.
+const CONNECTIONS: Array[Dictionary] = [
+    {
+        "id": "power_circuit",
+        "sources": ["ash_warm_conduit", "cable_scarred_junction"],
+        "text": "Two different traces of an active cable route. They might connect.",
+        "mesa_lead": false,
+    },
+    {
+        "id": "shared_pulse",
+        "sources": ["foundry_shift_cycle", "basin_reverse_flow"],
+        "text": "The press and the siphon both pulse regularly. Could they share a timing signal?",
+        "mesa_lead": false,
+    },
+    {
+        "id": "eastern_power",
+        "sources": ["ash_warm_conduit", "cable_eastbound_feeder"],
+        "text": "That warm conduit may feed the line vanishing into the eastern stone shelf. Is something hidden under the rock still powered?",
+        "mesa_lead": true,
+    },
+    {
+        "id": "eastern_service",
+        "sources": ["foundry_shift_cycle", "basin_return_manifold"],
+        "text": "The press and the return manifold keep time with distant machinery. The return goes beneath the eastern shelf—could there be a working installation?",
+        "mesa_lead": true,
+    },
+]
+
+
+func available_connections() -> Array[Dictionary]:
+    var result: Array[Dictionary] = []
+    for item: Dictionary in CONNECTIONS:
+        var sources: Array = item["sources"]
+        if knows(String(sources[0])) and knows(String(sources[1])):
+            result.append(item.duplicate(true))
+    return result
+
+
+func related_inferences(id: String) -> Array[String]:
+    # Journal pages only show deductions whose evidence includes this page.
+    var result: Array[String] = []
+    for item: Dictionary in available_connections():
+        if (item["sources"] as Array).has(id):
+            result.append(String(item["text"]))
+    return result
+
+
+func mesa_leads() -> Array[String]:
+    # P4 can use this as an OPTIONAL hint, never as a locked-door predicate.
+    var result: Array[String] = []
+    for item: Dictionary in available_connections():
+        if bool(item["mesa_lead"]):
+            result.append(String(item["id"]))
+    return result
+
+
 func inference() -> String:
-    # This is a deduction from *both* physically observed facts, not new lore.
     var possibilities: Array[String] = []
-    if knows("ash_warm_conduit") and knows("cable_scarred_junction"):
-        possibilities.append("Two different traces of an active cable route. They might connect.")
-    if knows("foundry_shift_cycle") and knows("basin_reverse_flow"):
-        possibilities.append("The press and the siphon both pulse regularly. Could they share a timing signal?")
+    for item: Dictionary in available_connections():
+        possibilities.append(String(item["text"]))
     return "\n".join(possibilities)
 
 
