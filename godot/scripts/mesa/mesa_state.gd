@@ -20,6 +20,8 @@ var court_grow_minutes: float = 0.0
 var court_ready: bool = false
 var rear_nook_prepared: bool = false
 var first_night_spent: bool = false
+var service_signal_inspected: bool = false
+var service_signal_diverted: bool = false
 
 
 func is_open() -> bool:
@@ -153,6 +155,23 @@ func settle_first_night() -> bool:
     return true
 
 
+func inspect_service_signal() -> bool:
+    # The buried service carrier becomes legible only when the gallery is live.
+    if not flow_online() or service_signal_inspected:
+        return false
+    service_signal_inspected = true
+    return true
+
+
+func toggle_service_signal() -> bool:
+    # A reversible, harmless maintenance-routing experiment; no security lock,
+    # loot sink, forced fight or irreversible claim about the site's purpose.
+    if not service_signal_inspected or not flow_online():
+        return false
+    service_signal_diverted = not service_signal_diverted
+    return true
+
+
 func snapshot() -> Dictionary:
     return {
         "inspected": inspected,
@@ -168,6 +187,8 @@ func snapshot() -> Dictionary:
         "court_ready": court_ready,
         "rear_nook_prepared": rear_nook_prepared,
         "first_night_spent": first_night_spent,
+        "service_signal_inspected": service_signal_inspected,
+        "service_signal_diverted": service_signal_diverted,
     }
 
 
@@ -239,6 +260,12 @@ func restore_snapshot(raw: Dictionary) -> bool:
         return false
     if bool(raw_first_night) and (not bool(raw_nook) or int(raw_court) != UTILITY_STAGES):
         return false
+    var raw_signal: Variant = raw.get("service_signal_inspected")
+    var raw_diversion: Variant = raw.get("service_signal_diverted")
+    if typeof(raw_signal) != TYPE_BOOL or typeof(raw_diversion) != TYPE_BOOL:
+        return false
+    if (bool(raw_signal) and String(flow_mode).is_empty()) or (bool(raw_diversion) and not bool(raw_signal)):
+        return false
     inspected = bool(looked)
     manual_progress = int(steps)
     access_method = String(method)
@@ -252,6 +279,8 @@ func restore_snapshot(raw: Dictionary) -> bool:
     court_ready = bool(raw_ready)
     rear_nook_prepared = bool(raw_nook)
     first_night_spent = bool(raw_first_night)
+    service_signal_inspected = bool(raw_signal)
+    service_signal_diverted = bool(raw_diversion)
     return true
 
 
