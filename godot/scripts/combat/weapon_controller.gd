@@ -63,7 +63,7 @@ func start_reload() -> bool:
     var ammo: Dictionary = selected_ammo()
     if int(ammo.get("clip", 0)) >= definition().magazine_size or int(ammo.get("reserve", 0)) < 1:
         return false
-    _reload_remaining = definition().reload_seconds
+    _reload_remaining = definition().reload_seconds * GameSession.condition.reload_modifier()
     GameSession.report("Reloading. Breathe, Yuna.")
     return true
 
@@ -99,7 +99,10 @@ func shoot_at(world_target: Vector2) -> bool:
     ammo["clip"] = int(ammo["clip"]) - 1
     GameSession.combat_state[key] = ammo
     _cooldown = definition().fire_interval
-    var destination: Vector2 = origin + vector.normalized() * minf(vector.length(), definition().effective_range)
+    # Deterministic slight hand tremor, never a random arbitrary miss.
+    var sway: float = GameSession.condition.aim_sway_pixels()
+    var aim: Vector2 = vector.normalized().rotated(sin(Time.get_ticks_msec() * 0.006) * sway * 0.0018)
+    var destination: Vector2 = origin + aim * minf(vector.length(), definition().effective_range)
     var query := PhysicsRayQueryParameters2D.create(origin, destination, 1 | 4)
     var ray: Dictionary = get_world_2d().direct_space_state.intersect_ray(query)
     var hit: bool = false
