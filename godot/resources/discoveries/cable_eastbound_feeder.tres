@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DiscoveryDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/discovery/discovery_definition.gd" id="1_discovery"]
+
+[resource]
+script = ExtResource("1_discovery")
+discovery_id = &"cable_eastbound_feeder"
+title = "A feeder disappearing into stone"
+observation = "An insulated power feeder leaves the relay trunks toward the raised eastern stone shelf. Its maintenance marks have been rubbed away."
+hypothesis = "Something beyond the visible machine route might still be drawing power."
+personal_plan = "Compare this feeder with any other warm cable you find, Yuna. Or just follow the rock shelf."
+bark_event = &"noticed_east_feeder"
