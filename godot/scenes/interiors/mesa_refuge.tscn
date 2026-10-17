@@ -13,9 +13,9 @@ script = ExtResource("1_refuge")
 [node name="Ambient" type="CanvasModulate" parent="."]
 color = Color(0.3, 0.36, 0.42, 1)
 
+[node name="RearNook" parent="." instance=ExtResource("4_nook")]
+
 [node name="Yuna" parent="." instance=ExtResource("2_yuna")]
 
 [node name="ShelterDecorator" parent="." instance=ExtResource("3_decor")]
 location_id = "mesa"
-
-[node name="RearNook" parent="." instance=ExtResource("4_nook")]
