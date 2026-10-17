@@ -61,7 +61,10 @@ func _process(delta: float) -> void:
     if GameSession.current_level == "shelter":
         _hud.text += "Little Nest"
     elif GameSession.current_level == "mesa":
-        _hud.text += "Mesa Refuge — " + ("first sector safe" if GameSession.mesa.first_sector_safe else "first sector unpowered")
+        var room_label: String = "first night spent" if GameSession.mesa.first_night_spent else (
+            "sun court restored" if GameSession.mesa.court_restored() else (
+            "first sector safe" if GameSession.mesa.first_sector_safe else "first sector unpowered"))
+        _hud.text += "Mesa Refuge — " + room_label
     else:
         _hud.text += "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
     _hud.text += "\nScrap %d  |  Wire %d  |  Relay fuse %d" % [
