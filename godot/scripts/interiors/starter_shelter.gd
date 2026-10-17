@@ -12,6 +12,12 @@ const EXIT_POSITION: Vector2 = Vector2(330, 443)
 
 func _ready() -> void:
     yuna.position = GameSession.shelter_position
+    var camera: Camera2D = yuna.get_node("Camera2D") as Camera2D
+    camera.zoom = Vector2(1.85, 1.85)
+    camera.limit_left = 30
+    camera.limit_top = 35
+    camera.limit_right = 640
+    camera.limit_bottom = 510
     var lamp := PointLight2D.new()
     lamp.position = Vector2(150, 225)
     lamp.texture = LightFactory.radial_texture()
