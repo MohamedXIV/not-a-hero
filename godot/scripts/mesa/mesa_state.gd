@@ -18,6 +18,8 @@ var flow_method: String = ""
 var court_progress: int = 0
 var court_grow_minutes: float = 0.0
 var court_ready: bool = false
+var rear_nook_prepared: bool = false
+var first_night_spent: bool = false
 
 
 func is_open() -> bool:
@@ -134,6 +136,23 @@ func harvest_court(condition: YunaCondition) -> bool:
     return true
 
 
+func prepare_rear_nook() -> bool:
+    # Available through observation and patient work, never random salvage.
+    if not flow_online() or rear_nook_prepared:
+        return false
+    rear_nook_prepared = true
+    return true
+
+
+func settle_first_night() -> bool:
+    # A chosen first night *after* reclaiming both light and a quiet corner.
+    # Does not replace Little Nest or permanently change the home address.
+    if not rear_nook_prepared or not court_restored() or first_night_spent:
+        return false
+    first_night_spent = true
+    return true
+
+
 func snapshot() -> Dictionary:
     return {
         "inspected": inspected,
@@ -147,6 +166,8 @@ func snapshot() -> Dictionary:
         "court_progress": court_progress,
         "court_grow_minutes": court_grow_minutes,
         "court_ready": court_ready,
+        "rear_nook_prepared": rear_nook_prepared,
+        "first_night_spent": first_night_spent,
     }
 
 
@@ -210,6 +231,14 @@ func restore_snapshot(raw: Dictionary) -> bool:
         return false
     if bool(raw_ready) and float(raw_growth) != 0.0:
         return false
+    var raw_nook: Variant = raw.get("rear_nook_prepared")
+    var raw_first_night: Variant = raw.get("first_night_spent")
+    if typeof(raw_nook) != TYPE_BOOL or typeof(raw_first_night) != TYPE_BOOL:
+        return false
+    if bool(raw_nook) and String(flow_mode).is_empty():
+        return false
+    if bool(raw_first_night) and (not bool(raw_nook) or int(raw_court) != UTILITY_STAGES):
+        return false
     inspected = bool(looked)
     manual_progress = int(steps)
     access_method = String(method)
@@ -221,6 +250,8 @@ func restore_snapshot(raw: Dictionary) -> bool:
     court_progress = int(raw_court)
     court_grow_minutes = float(raw_growth)
     court_ready = bool(raw_ready)
+    rear_nook_prepared = bool(raw_nook)
+    first_night_spent = bool(raw_first_night)
     return true
 
 
