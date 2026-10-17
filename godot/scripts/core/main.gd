@@ -6,6 +6,7 @@ const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_she
 
 var _level: Node2D
 var _hud: Label
+var _last_transition_msec: int = -100000
 
 
 func _ready() -> void:
@@ -36,6 +37,11 @@ func _open_level(level_id: String) -> void:
 
 
 func _on_transition(target: String) -> void:
+    # Avoid a single held E key bouncing immediately back through the hatch.
+    var now: int = Time.get_ticks_msec()
+    if now - _last_transition_msec < 450:
+        return
+    _last_transition_msec = now
     _open_level(target)
     GameSession.save_to_disk()
 
