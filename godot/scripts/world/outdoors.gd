@@ -20,6 +20,11 @@ var _loaded_chunks: Dictionary = {}
 
 func _ready() -> void:
     yuna.position = GameSession.outdoor_position
+    var camera: Camera2D = yuna.get_node("Camera2D") as Camera2D
+    camera.limit_left = 0
+    camera.limit_top = 0
+    camera.limit_right = int(CHUNK_WIDTH * float(CHUNKS.size()))
+    camera.limit_bottom = 640
     _sync_chunks()
     queue_redraw()
 
@@ -32,8 +37,19 @@ func _process(_delta: float) -> void:
     GameSession.outdoor_position = yuna.position
     _sync_chunks()
     _apply_daylight()
-    if yuna.position.distance_to(HATCH_POSITION) < 55.0 and Input.is_action_just_pressed("interact"):
+    if Input.is_action_just_pressed("interact"):
+        _try_interaction()
+
+
+func _try_interaction() -> void:
+    if yuna.position.distance_to(HATCH_POSITION) < 55.0:
         transition_requested.emit("shelter")
+        return
+    for node: Node in get_tree().get_nodes_in_group("world_interactables"):
+        if node is Node2D and yuna.global_position.distance_to((node as Node2D).global_position) < 74.0:
+            node.call("interact")
+            GameSession.save_to_disk()
+            return
 
 
 func _draw() -> void:
