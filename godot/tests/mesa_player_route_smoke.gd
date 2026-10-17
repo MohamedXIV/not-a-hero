@@ -108,6 +108,8 @@ func _exercise_route(method: String) -> bool:
     # Exit with E through Main, not by calling the signal directly.
     mesa_yuna.position = refuge.EXIT_POINT
     await get_tree().process_frame
+    var exit_signals: Array[String] = []
+    refuge.transition_requested.connect(func(dest: String) -> void: exit_signals.append(dest))
     await get_tree().create_timer(0.5).timeout
     await _tap("interact")
     outside = main.get("_level") as Node2D
@@ -117,6 +119,7 @@ func _exercise_route(method: String) -> bool:
             str(mesa_yuna.position), Time.get_ticks_msec() - int(main.get("_last_transition_msec")),
             str(outside.name),
         ])
+        print("DIAGNOSTIC: exit_signals=%s input_pressed=%s" % [str(exit_signals), str(Input.is_action_pressed("interact"))])
         _fail("Interior exit E failed to bring Yuna outdoors")
         return false
     if GameSession.outdoor_position.distance_to(Vector2(2420, 172)) > 1.0:
