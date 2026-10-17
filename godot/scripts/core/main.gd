@@ -12,6 +12,9 @@ var _status_detail: Label
 var _subtitle: Label
 var _notebook_display: Label
 var _notebook_page: int = 0
+var _controls_display: Label
+var _interaction_display: Label
+var _feedback_display: Label
 var _save_button: Button
 var _save_message: String = ""
 var _save_message_until: int = 0
@@ -56,9 +59,11 @@ func _process(delta: float) -> void:
         _update_notebook_display()
     if Input.is_action_just_pressed("quick_save"):
         _write_save()
+    if Input.is_action_just_pressed("open_controls"):
+        _controls_display.visible = not _controls_display.visible
     var hour: int = int(GameSession.day_minutes / 60.0)
     var minute: int = int(GameSession.day_minutes) % 60
-    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | N notebook | Tab condition | F6 save\n" % [hour, minute]
+    _hud.text = "NOT A HERO    %02d:%02d    H — Controls\n" % [hour, minute]
     if GameSession.current_level == "shelter":
         _hud.text += "Little Nest"
     elif GameSession.current_level == "mesa_depth":
@@ -70,24 +75,20 @@ func _process(delta: float) -> void:
         _hud.text += "Mesa Refuge — " + room_label
     else:
         _hud.text += "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
-    _hud.text += "\nScrap %d  |  Wire %d  |  Relay fuse %d" % [
-        GameSession.bag.quantity(&"scrap"),
-        GameSession.bag.quantity(&"wire"),
-        GameSession.bag.quantity(&"relay_fuse")
-    ]
-    _hud.text += "\nBag %d/24 | Storage %d/120" % [
-        GameSession.bag.total_units(), GameSession.storage.total_units()
-    ]
+    _hud.text += "\nBag %d/24" % GameSession.bag.total_units()
     if GameSession.current_level == "shelter":
-        _hud.text += "\nFurnishings: rug %d | lantern %d | G arrange" % [
-            GameSession.bag.quantity(&"rug"), GameSession.bag.quantity(&"lantern")
+        _hud.text += "   Meals %d  |  Water %d" % [
+            int(GameSession.home_supplies["meals"]), int(GameSession.home_supplies["water"])
         ]
-    if GameSession.current_level == "outdoors":
-        var selected: String = str(GameSession.combat_state.get("selected", "pistol"))
-        var ammo: Dictionary = GameSession.combat_state.get(selected, {})
-        _hud.text += "\n1 Pistol | 2 Rifle | Click fire | R reload — %s %d/%d" % [
-            selected.capitalize(), int(ammo.get("clip", 0)), int(ammo.get("reserve", 0))
+    elif GameSession.current_level == "outdoors":
+        _hud.text += "   Wire %d  |  Scrap %d  |  Fuse %d" % [
+            GameSession.bag.quantity(&"wire"),
+            GameSession.bag.quantity(&"scrap"),
+            GameSession.bag.quantity(&"relay_fuse")
         ]
+    else:
+        _hud.text += "   Mesa refuge"
+
     var state: YunaCondition = GameSession.condition
     if state.composure < 55.0:
         _hud.text += "\nFeeling %s — find cover or head home" % state.composure_label().to_lower()
@@ -120,14 +121,15 @@ func _process(delta: float) -> void:
     _subtitle.visible = not spoken.is_empty()
     if _subtitle.visible:
         _subtitle.text = "Yuna: " + spoken
-    if GameSession.current_feedback() != "":
-        _hud.text += "\n" + GameSession.current_feedback()
+    var note: String = GameSession.current_feedback()
     if Time.get_ticks_msec() < _save_message_until:
-        _hud.text += "\n" + _save_message
+        note = _save_message
+    _feedback_display.text = note
+    _feedback_display.visible = not note.is_empty()
+    _interaction_display.text = ""
     if is_instance_valid(_level) and _level.has_method("get_interaction_hint"):
-        var hint: String = _level.call("get_interaction_hint")
-        if hint != "":
-            _hud.text += "\n" + hint
+        _interaction_display.text = str(_level.call("get_interaction_hint"))
+    _interaction_display.visible = not _interaction_display.text.is_empty()
 
 
 func _open_level(level_id: String) -> void:
@@ -170,6 +172,48 @@ func _build_hud() -> void:
     _hud.add_theme_color_override("font_color", Color("#f5dfba"))
     _hud.add_theme_font_size_override("font_size", 17)
     overlay.add_child(_hud)
+
+    # Optional concise controls. Long key legends no longer cover the art
+    # every moment of exploration, but remain accessible with H.
+    _controls_display = Label.new()
+    _controls_display.name = "Controls"
+    _controls_display.position = Vector2(22, 123)
+    _controls_display.add_theme_font_size_override("font_size", 19)
+    _controls_display.add_theme_color_override("font_color", Color("#f5dfba"))
+    _controls_display.add_theme_color_override("font_shadow_color", Color("#151d22"))
+    _controls_display.add_theme_constant_override("shadow_offset_x", 2)
+    _controls_display.add_theme_constant_override("shadow_offset_y", 2)
+    _controls_display.text = ("WASD  Walk     Shift  Sprint     E  Interact\\n"
+            + "Q  Optional machine part     G  Arrange     X  Pick up\\n"
+            + "1 / 2  Weapons     Click  Fire     R  Reload     F  First aid\\n"
+            + "Tab  Condition     N  Notebook     J  Next     P  Pin\\n"
+            + "F6  Save     V  Voice     B  Subtitles     H  Close")
+    _controls_display.visible = false
+    overlay.add_child(_controls_display)
+
+    var viewport_size: Vector2 = get_viewport_rect().size
+    _feedback_display = Label.new()
+    _feedback_display.name = "ContextFeedback"
+    _feedback_display.position = Vector2(23, viewport_size.y - 176)
+    _feedback_display.size = Vector2(viewport_size.x - 46, 54)
+    _feedback_display.add_theme_font_size_override("font_size", 19)
+    _feedback_display.add_theme_color_override("font_color", Color("#f7cf9d"))
+    _feedback_display.add_theme_color_override("font_shadow_color", Color("#151d22"))
+    _feedback_display.add_theme_constant_override("shadow_offset_x", 2)
+    _feedback_display.add_theme_constant_override("shadow_offset_y", 2)
+    overlay.add_child(_feedback_display)
+
+    _interaction_display = Label.new()
+    _interaction_display.name = "InteractionPrompt"
+    _interaction_display.position = Vector2(23, viewport_size.y - 46)
+    _interaction_display.size = Vector2(viewport_size.x - 46, 40)
+    _interaction_display.add_theme_font_size_override("font_size", 20)
+    _interaction_display.add_theme_color_override("font_color", Color("#ffe4af"))
+    _interaction_display.add_theme_color_override("font_shadow_color", Color("#111a1e"))
+    _interaction_display.add_theme_constant_override("shadow_offset_x", 2)
+    _interaction_display.add_theme_constant_override("shadow_offset_y", 2)
+    overlay.add_child(_interaction_display)
+
     _status_detail = Label.new()
     _status_detail.name = "ConditionDetails"
     _status_detail.position = Vector2(18, 205)
@@ -180,8 +224,7 @@ func _build_hud() -> void:
 
     _subtitle = Label.new()
     _subtitle.name = "YunaSubtitle"
-    var viewport_size: Vector2 = get_viewport_rect().size
-    _subtitle.position = Vector2(180.0, viewport_size.y - 98.0)
+    _subtitle.position = Vector2(180.0, viewport_size.y - 115.0)
     _subtitle.size = Vector2(viewport_size.x - 360.0, 75.0)
     _subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     _subtitle.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
