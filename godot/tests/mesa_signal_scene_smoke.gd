@@ -52,10 +52,16 @@ func _check() -> void:
         return
 
     GameSession.ecology.advance(90.0)
+    # physics_frame is emitted BEFORE nodes process that tick; sample after a
+    # subsequent tick rather than reading the previous patrol position.
+    await get_tree().physics_frame
     await get_tree().physics_frame
     var close_to_hatch: float = worker.global_position.x
     if close_to_hatch < 2360.0 or GameSession.mesa.service_signal_diverted:
-        _fail("Curious servitor did not approach the hatch on a world-clock cycle")
+        _fail("Curious servitor route: x=%.2f home=%s route=%s elapsed=%.2f" % [
+            close_to_hatch, str(worker.get("_home")), str(worker.get("mesa_service_route")),
+            GameSession.ecology.elapsed_minutes
+        ])
         return
     walker.position = Vector2(325, 320)
     outdoors.call("_sync_chunks")
