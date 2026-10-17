@@ -3,13 +3,15 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 11
+const SAVE_VERSION: int = 12
 const HOME_SUPPLY_CAP: int = 12
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
 var outdoor_position: Vector2 = Vector2(160.0, 330.0)
 var shelter_position: Vector2 = Vector2(340.0, 365.0)
+var mesa_position: Vector2 = Vector2(217.0, 552.0)
+var mesa: MesaState = MesaState.new()
 var day_minutes: float = 8.0 * 60.0
 var world_seed: int = 1573
 var world_flags: Dictionary = {}
@@ -160,6 +162,8 @@ func snapshot() -> Dictionary:
         "current_level": current_level,
         "outdoor_position": [outdoor_position.x, outdoor_position.y],
         "shelter_position": [shelter_position.x, shelter_position.y],
+        "mesa_position": [mesa_position.x, mesa_position.y],
+        "mesa": mesa.snapshot(),
         "day_minutes": day_minutes,
         "world_seed": world_seed,
         "world_flags": world_flags.duplicate(true),
@@ -181,11 +185,12 @@ func restore_snapshot(data: Dictionary) -> bool:
     if int(data.get("version", -1)) != SAVE_VERSION:
         return false
     var level_id: String = str(data.get("current_level", ""))
-    if level_id != "shelter" and level_id != "outdoors":
+    if level_id not in ["shelter", "outdoors", "mesa"]:
         return false
     var outdoor: Variant = data.get("outdoor_position", [])
     var shelter: Variant = data.get("shelter_position", [])
-    if not _valid_point(outdoor) or not _valid_point(shelter):
+    var mesa_place: Variant = data.get("mesa_position", [])
+    if not _valid_point(outdoor) or not _valid_point(shelter) or not _valid_point(mesa_place):
         return false
     var flags: Variant = data.get("world_flags", {})
     if typeof(flags) != TYPE_DICTIONARY:
@@ -193,6 +198,14 @@ func restore_snapshot(data: Dictionary) -> bool:
     for flag_id: Variant in flags.keys():
         if typeof(flag_id) != TYPE_STRING or typeof(flags[flag_id]) != TYPE_BOOL:
             return false
+    var raw_mesa: Variant = data.get("mesa", null)
+    if typeof(raw_mesa) != TYPE_DICTIONARY:
+        return false
+    var restored_mesa := MesaState.new()
+    if not restored_mesa.restore_snapshot(raw_mesa as Dictionary):
+        return false
+    if level_id == "mesa" and not restored_mesa.is_open():
+        return false
     var raw_inventory: Variant = data.get("inventory", null)
     if typeof(raw_inventory) != TYPE_DICTIONARY:
         return false
@@ -274,6 +287,8 @@ func restore_snapshot(data: Dictionary) -> bool:
     current_level = level_id
     outdoor_position = Vector2(float(outdoor[0]), float(outdoor[1]))
     shelter_position = Vector2(float(shelter[0]), float(shelter[1]))
+    mesa_position = Vector2(float(mesa_place[0]), float(mesa_place[1]))
+    mesa = restored_mesa
     day_minutes = fposmod(float(clock), 1440.0)
     world_seed = int(seed)
     world_flags = (flags as Dictionary).duplicate(true)
