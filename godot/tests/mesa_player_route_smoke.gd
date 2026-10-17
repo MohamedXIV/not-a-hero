@@ -112,6 +112,11 @@ func _exercise_route(method: String) -> bool:
     await _tap("interact")
     outside = main.get("_level") as Node2D
     if GameSession.current_level != "outdoors" or outside == refuge:
+        print("DIAGNOSTIC: mesa exit method=%s level=%s hint=%s player=%s delta_ms=%d layer=%s" % [
+            method, GameSession.current_level, str(refuge.call("get_interaction_hint")),
+            str(mesa_yuna.position), Time.get_ticks_msec() - int(main.get("_last_transition_msec")),
+            str(outside.name),
+        ])
         _fail("Interior exit E failed to bring Yuna outdoors")
         return false
     if GameSession.outdoor_position.distance_to(Vector2(2420, 172)) > 1.0:
