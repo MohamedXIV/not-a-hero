@@ -1,7 +1,6 @@
 extends RefCounted
-## Input registration is a boot dependency, not the responsibility of a HUD/scene.
-## Later user key bindings can override these action defaults.
-
+## Default actions established with the session, not per scene.
+## Player may later rebind via InputMap without hardcoded controller branching.
 
 static func install_defaults() -> void:
     _ensure_key(&"move_left", KEY_A)
@@ -11,6 +10,10 @@ static func install_defaults() -> void:
     _ensure_key(&"interact", KEY_E)
     _ensure_key(&"sprint", KEY_SHIFT)
     _ensure_key(&"quick_save", KEY_F6)
+    _ensure_key(&"weapon_pistol", KEY_1)
+    _ensure_key(&"weapon_rifle", KEY_2)
+    _ensure_key(&"reload", KEY_R)
+    _ensure_mouse(&"fire", MOUSE_BUTTON_LEFT)
 
 
 static func _ensure_key(action: StringName, key: int) -> void:
@@ -21,4 +24,15 @@ static func _ensure_key(action: StringName, key: int) -> void:
             return
     var event := InputEventKey.new()
     event.physical_keycode = key
+    InputMap.action_add_event(action, event)
+
+
+static func _ensure_mouse(action: StringName, button: MouseButton) -> void:
+    if not InputMap.has_action(action):
+        InputMap.add_action(action)
+    for previous: InputEvent in InputMap.action_get_events(action):
+        if previous is InputEventMouseButton and previous.button_index == button:
+            return
+    var event := InputEventMouseButton.new()
+    event.button_index = button
     InputMap.action_add_event(action, event)
