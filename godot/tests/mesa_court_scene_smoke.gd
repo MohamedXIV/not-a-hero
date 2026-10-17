@@ -76,8 +76,10 @@ func _check() -> void:
         return
     var after_eat: float = GameSession.condition.nourishment
     await _tap(KEY_E)
-    if GameSession.condition.nourishment != after_eat:
-        _fail("Repeated E obtained unlimited instant food")
+    if (GameSession.condition.nourishment > after_eat
+            or GameSession.condition.nourishment < after_eat - 1.0
+            or GameSession.mesa.court_ready):
+        _fail("Repeated E obtained another harvest instead of normal passive hunger")
         return
 
     # The same placement node powers both homes, with distinct authoritative layouts.
