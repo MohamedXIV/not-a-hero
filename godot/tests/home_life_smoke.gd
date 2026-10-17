@@ -26,12 +26,14 @@ func _check() -> void:
     if GameSession.production.ready_culture != 1:
         _fail("Cultivation never matured after enough home time")
         return
+    var water_before: int = GameSession.production.ready_water
     yuna.position = shelter.CONDENSER_POINT
     if not str(shelter.call("get_interaction_hint")).contains("condensed water"):
         _fail("Condenser is not discoverable")
         return
     shelter.call("_interact_nearby")
-    if int(GameSession.home_supplies["water"]) != 6 or GameSession.production.ready_water != 1:
+    if (int(GameSession.home_supplies["water"]) != 6
+            or GameSession.production.ready_water != water_before - 1):
         _fail("Water harvest didn't consume exactly one ready portion")
         return
     yuna.position = shelter.CULTURE_POINT
