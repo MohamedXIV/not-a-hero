@@ -17,6 +17,10 @@ func _check() -> void:
     if save_button == null or save_button.text != "Save" or not save_button.visible:
         _fail("save button missing from normal startup")
         return
+    var button_rect: Rect2 = save_button.get_global_rect()
+    if button_rect.position.x < 0.0 or button_rect.end.x > 1280.0 or button_rect.position.y < 0.0:
+        _fail("save button is off-screen despite being marked visible")
+        return
     var shelter: Node2D = main.get("_level") as Node2D
     if shelter == null:
         _fail("shelter failed to instantiate")

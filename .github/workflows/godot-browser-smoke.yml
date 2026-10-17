@@ -1,4 +1,5 @@
 name: Godot P0 real browser smoke
+# Regression: assert Save button actually persists post-autosave movement.
 
 # Web export templates are enormous. This job only runs when the
 # browser-test workflow itself changes, not on every gameplay commit.

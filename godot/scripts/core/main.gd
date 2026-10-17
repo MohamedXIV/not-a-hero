@@ -71,8 +71,9 @@ func _build_hud() -> void:
     _save_button.name = "SaveButton"
     _save_button.text = "Save"
     _save_button.size = Vector2(104, 42)
-    _save_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-    _save_button.position = Vector2(1152, 15)
+    # CanvasLayer is not a sized Control parent; the TOP_RIGHT preset would
+    # apply a viewport anchor plus absolute X, pushing the button offscreen.
+    _save_button.position = Vector2(get_viewport_rect().size.x - 128.0, 15.0)
     _save_button.pressed.connect(_write_save)
     overlay.add_child(_save_button)
 
