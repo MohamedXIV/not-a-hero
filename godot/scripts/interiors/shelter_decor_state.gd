@@ -6,6 +6,10 @@ extends RefCounted
 const GRID_STEP: float = 16.0
 const MAX_PLACED: int = 16
 const ROOM: Rect2 = Rect2(78, 104, 505, 362)
+const MESA_ROOM: Rect2 = Rect2(414, 530, 462, 104)
+const MESA_BLOCKED: Array[Rect2] = [
+    Rect2(690, 530, 67, 104), # keep the route to the rear-gallery open
+]
 const BLOCKED: Array[Rect2] = [
     Rect2(100, 135, 110, 155), # bed and its approach
     Rect2(78, 327, 128, 83),   # cooker
@@ -25,6 +29,11 @@ const DEFINITIONS: Dictionary = {
 }
 
 var _placements: Array[Dictionary] = []
+var _is_mesa: bool = false
+
+
+func _init(mesa_room: bool = false) -> void:
+    _is_mesa = mesa_room
 
 
 func definition(kind: String) -> DecorDefinition:
@@ -54,9 +63,9 @@ func can_place(kind: String, point: Vector2) -> bool:
     if not is_finite(point.x) or not is_finite(point.y):
         return false
     var placement: Rect2 = Rect2(snap_to_grid(point) - decor.footprint * 0.5, decor.footprint)
-    if not ROOM.encloses(placement):
+    if not (MESA_ROOM if _is_mesa else ROOM).encloses(placement):
         return false
-    for forbidden: Rect2 in BLOCKED:
+    for forbidden: Rect2 in (MESA_BLOCKED if _is_mesa else BLOCKED):
         if placement.intersects(forbidden):
             return false
     for existing: Dictionary in _placements:
@@ -96,7 +105,7 @@ func remove_at(index: int) -> String:
 func restore_snapshot(raw: Variant) -> bool:
     if typeof(raw) != TYPE_ARRAY or raw.size() > MAX_PLACED:
         return false
-    var candidate := ShelterDecorState.new()
+    var candidate := ShelterDecorState.new(_is_mesa)
     for entry: Variant in raw:
         if typeof(entry) != TYPE_DICTIONARY:
             return false

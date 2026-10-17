@@ -6,6 +6,11 @@ const LightFactory = preload("res://scripts/presentation/light_factory.gd")
 
 var edit_mode: bool = false
 var selected_kind: String = "rug"
+@export var location_id: String = "shelter"
+
+
+func _state() -> ShelterDecorState:
+    return GameSession.mesa_decor if location_id == "mesa" else GameSession.decor
 
 
 func _ready() -> void:
@@ -36,14 +41,14 @@ func _process(_delta: float) -> void:
 
 
 func place_at(kind: String, point: Vector2) -> bool:
-    if not GameSession.decor.can_place(kind, point):
-        GameSession.report("Not there, Yuna. Keep the hatch and furniture clear.")
+    if not _state().can_place(kind, point):
+        GameSession.report("Not there, Yuna. Keep the exits and machinery clear.")
         return false
-    var info: DecorDefinition = GameSession.decor.definition(kind)
+    var info: DecorDefinition = _state().definition(kind)
     if info == null or not GameSession.bag.try_spend(info.inventory_item.item_id, 1):
         GameSession.report("You don't have that furnishing in your bag, Yuna.")
         return false
-    if not GameSession.decor.place(kind, point):
+    if not _state().place(kind, point):
         GameSession.bag.try_receive({String(info.inventory_item.item_id): 1})
         return false
     GameSession.report("There. Your space, your rules, Yuna.")
@@ -53,17 +58,17 @@ func place_at(kind: String, point: Vector2) -> bool:
 
 
 func pickup_at(point: Vector2) -> bool:
-    var index: int = GameSession.decor.at_point(point)
+    var index: int = _state().at_point(point)
     if index < 0:
         return false
-    var placed: Dictionary = GameSession.decor.items()[index]
+    var placed: Dictionary = _state().items()[index]
     var kind: String = String(placed["kind"])
-    var info: DecorDefinition = GameSession.decor.definition(kind)
+    var info: DecorDefinition = _state().definition(kind)
     # Capacity check first. Failed retrieval must leave a lamp in place.
     if not GameSession.bag.try_receive({String(info.inventory_item.item_id): 1}):
         GameSession.report("No room to pick that up, Yuna.")
         return false
-    GameSession.decor.remove_at(index)
+    _state().remove_at(index)
     GameSession.save_to_disk()
     _rebuild_placed_objects()
     return true
@@ -73,9 +78,9 @@ func _rebuild_placed_objects() -> void:
     for child: Node in get_children():
         remove_child(child)
         child.queue_free()
-    for entry: Dictionary in GameSession.decor.items():
+    for entry: Dictionary in _state().items():
         var kind: String = String(entry["kind"])
-        var info: DecorDefinition = GameSession.decor.definition(kind)
+        var info: DecorDefinition = _state().definition(kind)
         var center: Vector2 = Vector2(float(entry["x"]), float(entry["y"]))
         if info.obstructs_movement:
             var body := StaticBody2D.new()
@@ -98,9 +103,9 @@ func _rebuild_placed_objects() -> void:
 
 
 func _draw() -> void:
-    for entry: Dictionary in GameSession.decor.items():
+    for entry: Dictionary in _state().items():
         var kind: String = String(entry["kind"])
-        var info: DecorDefinition = GameSession.decor.definition(kind)
+        var info: DecorDefinition = _state().definition(kind)
         var center: Vector2 = Vector2(float(entry["x"]), float(entry["y"]))
         if kind == "rug":
             draw_rect(Rect2(center - info.footprint * 0.5, info.footprint), info.tint)
@@ -109,8 +114,8 @@ func _draw() -> void:
             draw_circle(center + Vector2(0, 4), 12.0, Color("#4b453e"))
             draw_circle(center, 7.0, info.tint)
     if edit_mode:
-        var current: DecorDefinition = GameSession.decor.definition(selected_kind)
-        var center: Vector2 = GameSession.decor.snap_to_grid(get_local_mouse_position())
-        var allowed: bool = GameSession.decor.can_place(selected_kind, center)
+        var current: DecorDefinition = _state().definition(selected_kind)
+        var center: Vector2 = _state().snap_to_grid(get_local_mouse_position())
+        var allowed: bool = _state().can_place(selected_kind, center)
         var tint: Color = Color(0.52, 0.89, 0.62, 0.52) if allowed else Color(0.95, 0.39, 0.37, 0.55)
         draw_rect(Rect2(center - current.footprint * 0.5, current.footprint), tint, false, 2.0)

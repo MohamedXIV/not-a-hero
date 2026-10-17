@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 13
+const SAVE_VERSION: int = 14
 const HOME_SUPPLY_CAP: int = 12
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
@@ -18,6 +18,7 @@ var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
 var decor: ShelterDecorState = ShelterDecorState.new()
+var mesa_decor: ShelterDecorState = ShelterDecorState.new(true)
 var notebook: NotebookState = NotebookState.new()
 var ecology: MachineEcology = MachineEcology.new()
 var production: HomeProduction = HomeProduction.new()
@@ -41,6 +42,7 @@ func advance_time(delta: float) -> void:
     # Approximate 24 real minutes per in-game day, provisional balance.
     day_minutes = fposmod(day_minutes + delta, 1440.0)
     production.advance(delta)
+    mesa.advance_court(delta)
     ecology.advance(delta)
     voice.tick(delta)
 
@@ -131,6 +133,7 @@ func sleep_at_home() -> void:
     speak(&"rested")
     day_minutes = fposmod(day_minutes + 360.0, 1440.0)
     production.advance(360.0)
+    mesa.advance_court(360.0)
     ecology.advance(360.0)
     report("Good. You needed that, Yuna.")
 
@@ -170,6 +173,7 @@ func snapshot() -> Dictionary:
         "inventory": bag.snapshot(),
         "storage": storage.snapshot(),
         "shelter_decor": decor.items(),
+        "mesa_decor": mesa_decor.items(),
         "notebook": notebook.snapshot(),
         "ecology": ecology.snapshot(),
         "home_production": production.snapshot(),
@@ -220,6 +224,9 @@ func restore_snapshot(data: Dictionary) -> bool:
         return false
     var restored_decor := ShelterDecorState.new()
     if not restored_decor.restore_snapshot(data.get("shelter_decor", null)):
+        return false
+    var restored_mesa_decor := ShelterDecorState.new(true)
+    if not restored_mesa_decor.restore_snapshot(data.get("mesa_decor", null)):
         return false
     var raw_notebook: Variant = data.get("notebook", null)
     if typeof(raw_notebook) != TYPE_DICTIONARY:
@@ -295,6 +302,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     bag = restored_bag
     storage = restored_storage
     decor = restored_decor
+    mesa_decor = restored_mesa_decor
     notebook = restored_notebook
     ecology = restored_ecology
     production = restored_production

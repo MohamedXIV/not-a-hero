@@ -6,6 +6,7 @@ extends RefCounted
 const MANUAL_STAGES: int = 3
 const UTILITY_STAGES: int = 2
 const WORK_MINUTES: float = 30.0
+const COURT_GROW_MINUTES: float = 720.0
 var inspected: bool = false
 var manual_progress: int = 0
 var access_method: String = ""
@@ -14,6 +15,9 @@ var power_progress: int = 0
 var power_method: String = ""
 var flow_progress: int = 0
 var flow_method: String = ""
+var court_progress: int = 0
+var court_grow_minutes: float = 0.0
+var court_ready: bool = false
 
 
 func is_open() -> bool:
@@ -98,6 +102,38 @@ func replace_flow_filter(bag: InventoryState) -> bool:
     return true
 
 
+func court_restored() -> bool:
+    return court_progress == UTILITY_STAGES
+
+
+func restore_court_stage() -> bool:
+    if not flow_online() or court_restored():
+        return false
+    court_progress += 1
+    return true
+
+
+func advance_court(minutes: float) -> void:
+    if not court_restored() or court_ready or not is_finite(minutes) or minutes <= 0.0:
+        return
+    court_grow_minutes += minutes
+    if court_grow_minutes >= COURT_GROW_MINUTES:
+        court_ready = true
+        court_grow_minutes = 0.0
+
+
+func harvest_court(condition: YunaCondition) -> bool:
+    # The Mesa offers one fresh meal, on-site, after slow passive growth.
+    # No inventory duplication or another mandatory garden chore.
+    if not court_restored() or not court_ready or condition == null:
+        return false
+    if not condition.eat_meal():
+        return false
+    court_ready = false
+    court_grow_minutes = 0.0
+    return true
+
+
 func snapshot() -> Dictionary:
     return {
         "inspected": inspected,
@@ -108,6 +144,9 @@ func snapshot() -> Dictionary:
         "power_method": power_method,
         "flow_progress": flow_progress,
         "flow_method": flow_method,
+        "court_progress": court_progress,
+        "court_grow_minutes": court_grow_minutes,
+        "court_ready": court_ready,
     }
 
 
@@ -156,6 +195,21 @@ func restore_snapshot(raw: Dictionary) -> bool:
         return false
     if String(power_mode).is_empty() and (int(flow_step) > 0 or not String(flow_mode).is_empty()):
         return false
+    var raw_court: Variant = raw.get("court_progress")
+    var raw_growth: Variant = raw.get("court_grow_minutes")
+    var raw_ready: Variant = raw.get("court_ready")
+    if not _valid_progress(raw_court) or typeof(raw_ready) != TYPE_BOOL:
+        return false
+    if typeof(raw_growth) != TYPE_FLOAT and typeof(raw_growth) != TYPE_INT:
+        return false
+    if not is_finite(float(raw_growth)) or float(raw_growth) < 0.0 or float(raw_growth) >= COURT_GROW_MINUTES:
+        return false
+    if int(raw_court) > 0 and String(flow_mode).is_empty():
+        return false
+    if int(raw_court) < UTILITY_STAGES and (float(raw_growth) != 0.0 or bool(raw_ready)):
+        return false
+    if bool(raw_ready) and float(raw_growth) != 0.0:
+        return false
     inspected = bool(looked)
     manual_progress = int(steps)
     access_method = String(method)
@@ -164,6 +218,9 @@ func restore_snapshot(raw: Dictionary) -> bool:
     power_method = String(power_mode)
     flow_progress = int(flow_step)
     flow_method = String(flow_mode)
+    court_progress = int(raw_court)
+    court_grow_minutes = float(raw_growth)
+    court_ready = bool(raw_ready)
     return true
 
 
