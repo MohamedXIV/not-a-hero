@@ -24,7 +24,7 @@ This is an early P0 interactive proof, **not** the complete P0 acceptance gate:
 6. Save and relaunch. Verify level/position/clock and relay state restore (no duplicated props).
 7. Run unit-style smoke scripts after importing the project:
    - `godot --headless --path godot --script res://tests/session_state_smoke.gd`
-   - `godot --headless --path godot --script res://tests/world_chunk_smoke.gd`
+   - `godot --headless --path godot res://tests/world_chunk_smoke.tscn --quit-after 180`
 8. Export HTML5 **with Compatibility renderer** when Web templates are available; test persistent save across browser reloads.
 
 ## Important
