@@ -164,6 +164,7 @@ func restore_snapshot(raw: Dictionary) -> bool:
     power_method = String(power_mode)
     flow_progress = int(flow_step)
     flow_method = String(flow_mode)
+    return true
 
 
 static func _valid_progress(value: Variant) -> bool:
@@ -178,4 +179,3 @@ static func _valid_method(method: String, progress: int, replacement: String) ->
     if method == replacement:
         return progress == 0
     return progress < UTILITY_STAGES
-    return true
