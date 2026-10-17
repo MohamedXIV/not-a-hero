@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
 
@@ -7,6 +7,9 @@
 
 [ext_resource type="PackedScene" path="res://scenes/world/observation_marker.tscn" id="4_observation"]
 [ext_resource type="Resource" path="res://resources/discoveries/foundry_shift_cycle.tres" id="5_discovery"]
+
+[ext_resource type="PackedScene" path="res://scenes/world/machine_event_site.tscn" id="6_site"]
+[ext_resource type="PackedScene" path="res://scenes/actors/robots/neutral_maintainer.tscn" id="7_worker"]
 
 [node name="RelayWasteChunk" type="Node2D"]
 script = ExtResource("1_chunk")
@@ -20,3 +23,8 @@ loot_table = ExtResource("3_loot")
 [node name="AutonomousPress" parent="." instance=ExtResource("4_observation")]
 position = Vector2(325, 375)
 discovery = ExtResource("5_discovery")
+
+[node name="ReclaimerShift" parent="." instance=ExtResource("6_site")]
+position = Vector2(540, 155)
+region_id = &"dead_foundry"
+worker_scene = ExtResource("7_worker")
