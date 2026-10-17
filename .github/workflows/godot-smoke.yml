@@ -62,6 +62,8 @@ jobs:
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 \
             --headless --path godot --script res://tests/home_production_smoke.gd 2>&1 | tee /tmp/home-production-test.log
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 \
+            --headless --path godot --script res://tests/notebook_smoke.gd 2>&1 | tee /tmp/notebook-test.log
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 \
             --headless --path godot --script res://tests/session_state_smoke.gd 2>&1 | tee /tmp/session-test.log
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 \
             --headless --path godot res://tests/world_chunk_smoke.tscn --quit-after 180 2>&1 | tee /tmp/chunk-test.log
@@ -81,7 +83,9 @@ jobs:
             --headless --path godot res://tests/decor_scene_smoke.tscn --quit-after 180 2>&1 | tee /tmp/decor-scene-test.log
           /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 \
             --headless --path godot res://tests/home_life_smoke.tscn --quit-after 180 2>&1 | tee /tmp/home-life-test.log
-          for logfile in /tmp/home-production-test.log /tmp/home-life-test.log /tmp/decor-test.log /tmp/decor-scene-test.log /tmp/voice-test.log /tmp/voice-scene-test.log /tmp/home-care-test.log /tmp/condition-test.log /tmp/condition-scene-test.log /tmp/inventory-test.log /tmp/loot-test.log /tmp/session-test.log /tmp/chunk-test.log /tmp/movement-test.log /tmp/combat-test.log /tmp/storage-test.log; do
+          /tmp/godot/Godot_v4.7.2-stable_linux.x86_64 \
+            --headless --path godot res://tests/notebook_scene_smoke.tscn --quit-after 180 2>&1 | tee /tmp/notebook-scene-test.log
+          for logfile in /tmp/notebook-test.log /tmp/notebook-scene-test.log /tmp/home-production-test.log /tmp/home-life-test.log /tmp/decor-test.log /tmp/decor-scene-test.log /tmp/voice-test.log /tmp/voice-scene-test.log /tmp/home-care-test.log /tmp/condition-test.log /tmp/condition-scene-test.log /tmp/inventory-test.log /tmp/loot-test.log /tmp/session-test.log /tmp/chunk-test.log /tmp/movement-test.log /tmp/combat-test.log /tmp/storage-test.log; do
             if grep -E 'ERROR:|SCRIPT ERROR:|Parse Error:|Failed to load' "$logfile"; then
               echo "Godot reported an engine/script error in $logfile"
               exit 1
