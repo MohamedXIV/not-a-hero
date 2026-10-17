@@ -45,3 +45,9 @@
 The existing `yuna_the_warmth_below (1).tsx` on `main` is a **playable reference only**. It is a 5,533-line React/Canvas single file containing content catalogs, seeded region generation, procedural sprites, audio, interactions and saves. Do not port, divide, or auto-translate it. Reimplement cleanly in Godot from first principles. Review for *what felt good or bad*, not for code to copy.
 
 Documentation is the current work product. Do not treat future roadmap items as already implemented.
+
+## P4e working interpretation — not final Mesa canon (2026-10-17)
+
+The present **gameplay evidence**, not an omniscient plot reveal: a nonhostile servitor repeats a clock-based approach to the Mesa hatch; an ancient live carrier in the accessible rear gallery acknowledges maintenance through buried utility lines. Inspecting both permits Yuna to **hypothesize** a connection. At the local terminal she can reversibly divert the service reply toward an old reflector; the robot visibly changes route, even after world streaming/saving. No machine is slain, and none locks her out of the home.
+
+This does **not** settle who originally sent that service request, whether the machines' wider interest is benign, or what lies in deeper sealed equipment. Those aspects remain open story decisions. The observable motive for *this one* ordinary servitor is a maintenance acknowledgement, not a universe-saving MacGuffin; alternative future explanations remain possible. No clue note appears before direct player observation, and neither optional note nor diversion gates the hatch, Sun Court, chosen first night or sandbox.
