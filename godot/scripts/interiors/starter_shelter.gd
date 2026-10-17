@@ -34,7 +34,26 @@ func _ready() -> void:
     ])
     shadow.occluder = shape
     add_child(shadow)
+    # Provisional furniture should physically obstruct the player's feet.
+    for footprint: Rect2 in [
+        Rect2(105, 142, 100, 125), # bed
+        Rect2(86, 340, 110, 55),  # cooker
+        Rect2(443, 248, 110, 62), # workbench
+        Rect2(460, 140, 74, 55),  # shelf
+    ]:
+        _add_furniture_collision(footprint)
     queue_redraw()
+
+
+func _add_furniture_collision(footprint: Rect2) -> void:
+    var body := StaticBody2D.new()
+    body.position = footprint.get_center()
+    var collider := CollisionShape2D.new()
+    var shape := RectangleShape2D.new()
+    shape.size = footprint.size
+    collider.shape = shape
+    body.add_child(collider)
+    add_child(body)
 
 
 func _physics_process(_delta: float) -> void:
