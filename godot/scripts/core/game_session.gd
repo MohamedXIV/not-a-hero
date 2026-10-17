@@ -4,6 +4,7 @@ extends Node
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
 const SAVE_VERSION: int = 1
+const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
 var outdoor_position: Vector2 = Vector2(160.0, 330.0)
@@ -11,6 +12,10 @@ var shelter_position: Vector2 = Vector2(340.0, 365.0)
 var day_minutes: float = 8.0 * 60.0
 var world_seed: int = 1573
 var world_flags: Dictionary = {}
+
+
+func _ready() -> void:
+    InputBindings.install_defaults()
 
 
 func advance_time(delta: float) -> void:
