@@ -7,6 +7,7 @@ func _ready() -> void:
 
 
 func _check() -> void:
+    print("COMBAT CHECK start")
     GameSession.current_level = "outdoors"
     GameSession.outdoor_position = Vector2(750, 320)
     GameSession.set_world_flag(&"world/cable_forest/survey_guard_01", false)
@@ -34,6 +35,7 @@ func _check() -> void:
         _fail("Neutral worker must not behave as a hostile")
         return
 
+    print("COMBAT CHECK actors found")
     # Add actual physics collision as cover; raycast and enemy visibility must agree.
     var cover := StaticBody2D.new()
     cover.position = Vector2(820, 320)
@@ -82,6 +84,7 @@ func _check() -> void:
         _fail("Rifle didn't affect hostile durability")
         return
 
+    print("COMBAT CHECK pistol + rifle tested")
     var rifle_ammo: Dictionary = GameSession.combat_state["rifle"]
     if int(rifle_ammo["clip"]) != 3:
         _fail("Rifle magazine wasn't consumed")
@@ -96,6 +99,7 @@ func _check() -> void:
     if int(rifle_ammo["clip"]) != 4 or int(rifle_ammo["reserve"]) != 12:
         _fail("Reload failed to transfer exact rounds: " + str(rifle_ammo))
         return
+    print("COMBAT CHECK reloaded magazine")
     var saved: Dictionary = GameSession.snapshot()
     GameSession.combat_state["rifle"] = {"clip": 1, "reserve": 0}
     if not GameSession.restore_snapshot(saved):
@@ -110,6 +114,7 @@ func _check() -> void:
         _fail("Fractional ammunition was accepted")
         return
 
+    print("COMBAT CHECK saved ammo and invalid test")
     # Stressful contact temporarily affects movement, without a player HP bar.
     guard.set_physics_process(true)
     yuna.position = guard.global_position + Vector2(23, 0)
