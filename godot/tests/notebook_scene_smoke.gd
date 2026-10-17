@@ -71,7 +71,8 @@ func _check() -> void:
         return
     label.visible = true
     main.call("_update_notebook_display")
-    if not label.text.contains("YUNA'S NOTEBOOK") or not label.text.contains("Cable"):
+    if (not label.text.contains("YUNA'S NOTEBOOK")
+            or not label.text.contains("An erased service junction")):
         _fail("Notebook HUD failed to display known evidence")
         return
     DirAccess.remove_absolute(ProjectSettings.globalize_path(GameSession.SAVE_PATH))
