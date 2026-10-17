@@ -21,6 +21,7 @@ const GROWING_BED: Vector2 = Vector2(513, 449)
 var _court_light: PointLight2D
 var _utility_light: PointLight2D
 var _rear_barrier: StaticBody2D
+var _last_court_ready: bool = false
 
 
 func _ready() -> void:
@@ -62,6 +63,7 @@ func _ready() -> void:
         _rear_barrier = _add_collision(Rect2(956, 74, 36, 520))
     _add_collision(Rect2(910, 498, 86, 45))
     _refresh_visuals()
+    _last_court_ready = GameSession.mesa.court_ready
     if not GameSession.mesa.first_sector_safe:
         GameSession.report("A whole place... but something's still running. Keep it safe, Yuna.")
 
@@ -84,6 +86,9 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
     GameSession.mesa_position = yuna.position
+    if _last_court_ready != GameSession.mesa.court_ready:
+        _last_court_ready = GameSession.mesa.court_ready
+        queue_redraw()
     if Input.is_action_just_pressed("interact") and not decorator.edit_mode:
         _interact_nearby()
     if Input.is_action_just_pressed("mesa_repair") and not decorator.edit_mode:
@@ -189,6 +194,7 @@ func _interact_nearby() -> void:
     elif yuna.position.distance_to(REST_BENCH) < 62.0:
         if GameSession.mesa.power_online():
             GameSession.sleep_at_home()
+            _refresh_visuals()
             GameSession.report("The mesa is quiet enough to rest now, Yuna.")
             GameSession.save_to_disk()
         else:
