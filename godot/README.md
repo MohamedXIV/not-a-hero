@@ -4,7 +4,7 @@
 
 ## Current status
 
-**Draft implementation. GitHub Actions headless validation is configured; review run results before claiming P0 is verified.**
+**Draft implementation. Godot 4.7.2 automated smoke tests validate parsing, running and chunk persistence. Rendering and Web export have separate checks; they do not replace manual gameplay review.**
 
 This is an early P0 interactive proof, **not** the complete P0 acceptance gate:
 - Provisional large Yuna drawn procedurally, with WASD movement and shift sprint.
@@ -34,3 +34,9 @@ This branch requires passing Godot parsing, scene load and smoke tests **plus** 
 Next foundation work: importer/headless parse test, bug fixes, real authored obstacle/world collision tests, starter shelter usability and save/persistence deltas. See [P0 issue](https://github.com/MohamedXIV/not-a-hero/issues/2).
 
 The one-file Gemini React experiment is retained at the repository root for design comparison only, not ported.
+
+## Additional checks (CI)
+
+- `godot/tests/render_smoke.tscn` captures the Little Nest and exterior dusk under **Xvfb/Compatibility**, and uploads short-lived preview PNGs to the PR run. This is a rendering diagnostic, **not** the approved art style.
+- `.github/workflows/godot-web-export.yml` tests export of HTML5 + WASM from the official matching Godot export templates. Because that archive is very large, this workflow runs automatically only when the Web preset/workflow changes; it is not part of every code push.
+- A real browser session, persistence across page reload and actual player movement/camera/lighting feel are still manual review gates.
