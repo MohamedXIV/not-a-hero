@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/actors/robots/neutral_maintainer.gd" id="1_worker"]
+
+[sub_resource type="CircleShape2D" id="1_collision"]
+radius = 13.0
+
+[node name="NeutralMaintainer" type="CharacterBody2D"]
+collision_layer = 8
+collision_mask = 1
+script = ExtResource("1_worker")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1_collision")

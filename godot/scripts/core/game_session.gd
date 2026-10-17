@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 2
+const SAVE_VERSION: int = 3
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -13,6 +13,11 @@ var day_minutes: float = 8.0 * 60.0
 var world_seed: int = 1573
 var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
+var combat_state: Dictionary = {
+    "selected": "pistol",
+    "pistol": {"clip": 8, "reserve": 32},
+    "rifle": {"clip": 4, "reserve": 16},
+}
 var _feedback: String = ""
 var _feedback_until: int = 0
 
@@ -53,6 +58,7 @@ func snapshot() -> Dictionary:
         "world_seed": world_seed,
         "world_flags": world_flags.duplicate(true),
         "inventory": bag.snapshot(),
+        "combat_state": combat_state.duplicate(true),
     }
 
 
@@ -79,6 +85,19 @@ func restore_snapshot(data: Dictionary) -> bool:
     var restored_bag := InventoryState.new()
     if not restored_bag.restore_snapshot(raw_inventory as Dictionary):
         return false
+    var stored_combat: Variant = data.get("combat_state", null)
+    if typeof(stored_combat) != TYPE_DICTIONARY:
+        return false
+    var combat: Dictionary = stored_combat as Dictionary
+    if not _valid_combat_state(combat):
+        return false
+    var next_combat: Dictionary = {"selected": str(combat["selected"])}
+    for name: String in ["pistol", "rifle"]:
+        var ammo: Dictionary = combat[name]
+        next_combat[name] = {
+            "clip": int(ammo["clip"]),
+            "reserve": int(ammo["reserve"]),
+        }
     var clock: Variant = data.get("day_minutes", 480.0)
     if typeof(clock) != TYPE_FLOAT and typeof(clock) != TYPE_INT:
         return false
@@ -93,6 +112,28 @@ func restore_snapshot(data: Dictionary) -> bool:
     world_seed = int(seed)
     world_flags = (flags as Dictionary).duplicate(true)
     bag = restored_bag
+    combat_state = next_combat
+    return true
+
+
+func _valid_combat_state(data: Dictionary) -> bool:
+    if data.get("selected") not in ["pistol", "rifle"]:
+        return false
+    for weapon_id: String in ["pistol", "rifle"]:
+        var candidate: Variant = data.get(weapon_id)
+        if typeof(candidate) != TYPE_DICTIONARY:
+            return false
+        var ammo: Dictionary = candidate as Dictionary
+        var magazine_max: int = 8 if weapon_id == "pistol" else 4
+        for key: String in ["clip", "reserve"]:
+            var value: Variant = ammo.get(key)
+            if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+                return false
+            var amount: int = int(value)
+            if float(value) != float(amount) or amount < 0:
+                return false
+            if amount > (magazine_max if key == "clip" else 200):
+                return false
     return true
 
 
