@@ -1,8 +1,8 @@
-name: Godot P0 real browser smoke
-# Regression: assert Save button persists new movement without relying on transition autosave.
-
-# Web export templates are enormous. This job only runs when the
-# browser-test workflow itself changes, not on every gameplay commit.
+name: Godot P5 Chromium WebGL2 and IndexedDB v17
+# Genuine exported HTML5 test. Lower-gallery state is seeded using an
+# engine-valid v17 snapshot; actions, scene transitions and saves run in Godot.
+# Web export templates are large: run only when browser workflow changes,
+# or explicitly dispatch for release acceptance, not every gameplay commit.
 on:
   pull_request:
     paths:
@@ -15,7 +15,7 @@ permissions:
 jobs:
   verify-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 24
     steps:
       - uses: actions/checkout@v4
       - name: Download matching official Godot 4.7.2 engine and templates
@@ -42,22 +42,31 @@ jobs:
           done
           test -s godot/build/web/index.html
           test -s godot/build/web/index.wasm
+          printf '<!doctype html><meta charset="utf-8"><title>CI-only IDBFS fixture</title>' > godot/build/web/__test_seed__.html
+          # __test_seed__.html is untracked and exists solely in the CI artifact directory.
       - name: Install Chromium browser-test tooling
         shell: bash
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1
           npx playwright install --with-deps chromium --only-shell
-      - name: Test browser Save and IndexedDB reload
+      - name: Test fresh v17, physically inspect and warm deep Mesa, IndexedDB reload
         shell: bash
         run: |
           set -euo pipefail
           python3 -m http.server 8765 --bind 127.0.0.1 --directory godot/build/web > /tmp/http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
-          node godot/tests/browser_smoke.cjs
+          node godot/tests/browser_smoke.cjs 2>&1 | tee /tmp/browser-v17.log
+          grep -q 'PASS: Chromium WebGL2 fresh v17 + lower v17 archive/heat + real scene return + IndexedDB persistent reload' /tmp/browser-v17.log
+          test -s /tmp/nah-depth-cold.png
+          test -s /tmp/nah-depth-warm.png
+          test -s /tmp/nah-depth-warm-reload.png
+          test -s /tmp/nah-mesa-return.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: godot-browser-smoke-previews
-          path: /tmp/nah-*-reload.png
+          name: godot-browser-v17-lighting-and-reload
+          path: |
+            /tmp/nah-*.png
+            /tmp/browser-v17.log
           retention-days: 3
