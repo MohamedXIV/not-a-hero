@@ -33,9 +33,18 @@ func _check() -> void:
     if GameSession.bag.quantity(&"scrap") != 3 or GameSession.bag.quantity(&"wire") != 1:
         _fail("salvage was not transacted into inventory")
         return
-    if not GameSession.bag.try_craft(load("res://resources/recipes/relay_fuse.tres") as RecipeDefinition):
-        _fail("crafting the relay fuse failed")
+    # Craft through the actual shelter Workbench scene, not just a direct inventory API.
+    var shelter_scene: PackedScene = load("res://scenes/interiors/starter_shelter.tscn") as PackedScene
+    var shelter: Node2D = shelter_scene.instantiate() as Node2D
+    add_child(shelter)
+    var workbench: Node2D = shelter.get_node_or_null("Workbench") as Node2D
+    if workbench == null or not workbench.call("interact"):
+        _fail("shelter workbench did not craft the fuse")
         return
+    if GameSession.bag.quantity(&"relay_fuse") != 1:
+        _fail("shelter crafting returned incorrect output")
+        return
+    shelter.queue_free()
     if not relay.call("interact"):
         _fail("crafted relay fuse failed to activate the machine")
         return
