@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DiscoveryDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/discovery/discovery_definition.gd" id="1_discovery"]
+
+[resource]
+script = ExtResource("1_discovery")
+discovery_id = &"mesa_service_tracks"
+title = "Service tracks outside the mesa"
+observation = "A harmless maintenance unit follows a repeating path toward the scored hatch. Worn grooves point at the door, but it never attacks or tries to pursue me."
+hypothesis = "Is it following a working call from inside, or just obeying an ancient route? I cannot tell from tracks alone."
+personal_plan = "You can watch the timing, Yuna. Nothing says you have to fight it."
+bark_event = &"noticed_mesa_tracks"
