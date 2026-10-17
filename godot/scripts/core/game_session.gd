@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 14
+const SAVE_VERSION: int = 15
 const HOME_SUPPLY_CAP: int = 12
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
