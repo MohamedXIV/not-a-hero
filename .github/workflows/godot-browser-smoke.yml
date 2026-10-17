@@ -12,6 +12,11 @@ on:
 permissions:
   contents: read
 
+# Heavy Web export templates: never run multiple superseded PR heads together.
+concurrency:
+  group: godot-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify-browser:
     runs-on: ubuntu-latest
