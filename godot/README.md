@@ -38,5 +38,5 @@ The one-file Gemini React experiment is retained at the repository root for desi
 ## Additional checks (CI)
 
 - `godot/tests/render_smoke.tscn` captures the Little Nest and exterior dusk under **Xvfb/Compatibility**, and uploads short-lived preview PNGs to the PR run. This is a rendering diagnostic, **not** the approved art style.
-- `.github/workflows/godot-web-export.yml` tests export of HTML5 + WASM from the official matching Godot export templates. Because that archive is very large, this workflow runs automatically only when the Web preset/workflow changes; it is not part of every code push.
+- `.github/workflows/godot-web-export.yml` tests export of HTML5 + WASM from the official matching Godot export templates. Because that archive is very large, a matching Web export has already passed; rechecking this expensive export is **manual workflow dispatch only**, never automatic on each PR push.
 - A real browser session, persistence across page reload and actual player movement/camera/lighting feel are still manual review gates.
