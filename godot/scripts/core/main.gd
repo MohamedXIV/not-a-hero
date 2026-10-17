@@ -1,5 +1,5 @@
 extends Node2D
-## Owns level transitions; interiors and exterior do not own persistent session state.
+## Scene-switching boundary; runtime state is owned by the GameSession autoload.
 
 const OUTDOORS: PackedScene = preload("res://scenes/world/outdoors.tscn")
 const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_shelter.tscn")
@@ -23,6 +23,10 @@ func _process(delta: float) -> void:
     var minute: int = int(GameSession.day_minutes) % 60
     _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | F5 save\n" % [hour, minute]
     _hud.text += "Little Nest" if GameSession.current_level == "shelter" else "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
+    if is_instance_valid(_level) and _level.has_method("get_interaction_hint"):
+        var hint: String = _level.call("get_interaction_hint")
+        if hint != "":
+            _hud.text += "\n" + hint
 
 
 func _open_level(level_id: String) -> void:
@@ -36,7 +40,6 @@ func _open_level(level_id: String) -> void:
 
 
 func _on_transition(target: String) -> void:
-    # Avoid a single held E key bouncing immediately back through the hatch.
     var now: int = Time.get_ticks_msec()
     if now - _last_transition_msec < 450:
         return
@@ -53,4 +56,3 @@ func _build_hud() -> void:
     _hud.add_theme_color_override("font_color", Color("#f5dfba"))
     _hud.add_theme_font_size_override("font_size", 17)
     overlay.add_child(_hud)
-

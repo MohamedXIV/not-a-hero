@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="WorldChunkDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_chunk_definition.gd" id="1_chunk"]
+[ext_resource type="PackedScene" path="res://scenes/world/chunks/cable_edge.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_chunk")
+chunk_id = &"cable_edge"
+grid_cell = Vector2i(1, 0)
+region_id = &"cable_forest"
+scene = ExtResource("2_scene")
