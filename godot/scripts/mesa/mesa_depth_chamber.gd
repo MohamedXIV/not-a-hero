@@ -13,6 +13,7 @@ const SERVICE_MINUTES: float = 20.0
 
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var ambient: CanvasModulate = $Ambient
+var _interact_held: bool = false
 var _cradle_light: PointLight2D
 var _utility_light: PointLight2D
 
@@ -61,7 +62,10 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
     GameSession.mesa_depth_position = yuna.position
-    if Input.is_action_just_pressed("interact"):
+    if not Input.is_action_pressed("interact"):
+        _interact_held = false
+    if Input.is_action_just_pressed("interact") and not _interact_held:
+        _interact_held = true
         _interact_nearby()
 
 
