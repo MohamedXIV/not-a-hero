@@ -1,6 +1,6 @@
 extends Node
 ## Tests actual authored mesa exterior, scene objects, first-sector care and
-## retention of both shelters. DOES NOT claim outdoors.gd E/Q dispatch exists.
+## retention of both shelters. The separate mesa_player_route_smoke exercises E/Q dispatch.
 
 const TEST_SAVE: String = "user://nah_p4a_site_homes_test.json"
 

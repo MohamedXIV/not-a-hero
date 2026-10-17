@@ -116,10 +116,11 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - The small articulated silhouettes of these two artifacts are provisional engineering markers (feeder bus vs pipe header), pending P5 art. P4 owns the *physical* eastern mesa site, its approach choices and actual opening sequence; these observations never gate P4 entry.
 - Automated tests validate both real in-world inspection routes, distinct observation order, no unseen fact leaks, streamer reload, disk save and scoped notebook UI, plus all older regressions.
 
-## P4a — mesa access and first interior (draft, integration unverified)
+## P4a — playable mesa access and first secure interior
 
 - An authored rocky mesa shelf and scored physical hatch appear at the east side of Coolant Basin, with a non-hostile servitor visibly investigating the site. The location exists independently of the optional Notebook leads.
 - `MesaState` records inspection, a three-stage slow emergency handwheel release, an alternative relay-fuse coupling, the single successful opening method, and whether the initial interior sector is safe. These facts are validated in v12 session saves.
 - A separate large mesa interior scene has a shaft of real daylight, initial utility room, sealed rear sectors and a safety control that the player can activate once. The Little Nest remains unchanged and can be revisited; returning outside preserves both locations.
-- **Integration warning:** P4a is not a playable entrance until the external-world interaction handoff in `outdoors.gd` is implemented and verified; do not merge this draft before that is resolved.
+- **Playable exterior access:** approach the hatch near the eastern rock shelf, press **E** to inspect it, then either **E** three times to release the manual cams (takes 20 in-game minutes per stage) or **Q** to install an optional carried relay fuse. Press **E** at the opened hatch to enter the mesa; **E** at the safety panel isolates the first sector; **E** near the interior exit returns Yuna outside. She can still travel back to the Little Nest.
+- A dedicated `mesa_player_route_smoke.tscn` test sends real mapped E/Q key events through Main's scene transitions using **both opening methods**, then returns to the original home and reloads both home states from disk. [Godot 4.7.2 full CI #39050032333](https://github.com/MohamedXIV/not-a-hero/actions/runs/39050032333) passed the complete P0–P4a regression suite and Compatibility screenshots.
 - The shelter remains partially dark/unpowered. Full restoration, customization and broader P4 emotional milestone are further slices, not complete here.
