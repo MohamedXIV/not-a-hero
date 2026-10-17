@@ -31,6 +31,8 @@ func _process(delta: float) -> void:
 
 func _open_level(level_id: String) -> void:
     if is_instance_valid(_level):
+        # Remove immediately so old scene cannot process input or update session again.
+        remove_child(_level)
         _level.queue_free()
     GameSession.current_level = level_id
     var template: PackedScene = OUTDOORS if level_id == "outdoors" else STARTER_SHELTER

@@ -43,6 +43,9 @@ func _check() -> void:
         return
 
     main.call("_open_level", "outdoors")
+    if shelter.is_inside_tree():
+        _fail("previous shelter remains active after scene switch")
+        return
     await get_tree().process_frame
     var outside: Node2D = main.get("_level") as Node2D
     if outside == null:
