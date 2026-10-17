@@ -74,6 +74,7 @@ func _check() -> void:
     if not label.text.contains("YUNA'S NOTEBOOK") or not label.text.contains("Cable"):
         _fail("Notebook HUD failed to display known evidence")
         return
+    DirAccess.remove_absolute(ProjectSettings.globalize_path(GameSession.SAVE_PATH))
     print("PASS: real inspection order, conditional notebook, chunk reload and saved discovery UI")
     main.queue_free()
     get_tree().quit(0)
