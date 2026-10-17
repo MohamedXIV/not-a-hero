@@ -85,8 +85,8 @@ func _valid_point(point: Variant) -> bool:
     return true
 
 
-func save_to_disk() -> bool:
-    var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+func save_to_disk(path: String = SAVE_PATH) -> bool:
+    var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
     if file == null:
         push_warning("Could not open save file: %s" % FileAccess.get_open_error())
         return false
@@ -95,10 +95,10 @@ func save_to_disk() -> bool:
     return true
 
 
-func load_from_disk() -> bool:
-    if not FileAccess.file_exists(SAVE_PATH):
+func load_from_disk(path: String = SAVE_PATH) -> bool:
+    if not FileAccess.file_exists(path):
         return false
-    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
+    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
     if typeof(parsed) != TYPE_DICTIONARY:
         push_warning("Ignoring malformed save.")
         return false

@@ -32,7 +32,15 @@ func _check() -> void:
     invalid = snapshot.duplicate(true)
     invalid["version"] = 999
     _assert_ok(not session.call("restore_snapshot", invalid), "incompatible version rejected")
-    print("PASS: session snapshot, persistent world flags, restore validation")
+    # Use a dedicated temporary path: test must never replace an actual player's save.
+    var path: String = "user://naah_p0_session_test.json"
+    session.call("set_world_flag", &"world/ash_flats/relay_01", true)
+    _assert_ok(session.call("save_to_disk", path), "real FileAccess save succeeds")
+    session.call("set_world_flag", &"world/ash_flats/relay_01", false)
+    _assert_ok(session.call("load_from_disk", path), "real FileAccess load succeeds")
+    _assert_ok(session.call("get_world_flag", &"world/ash_flats/relay_01"), "real disk save restored switch")
+    DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+    print("PASS: versioned snapshot, real file I/O and persistent world flags")
     session.free()
     quit(0)
 
