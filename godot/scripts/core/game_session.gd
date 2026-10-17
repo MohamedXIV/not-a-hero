@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 4
+const SAVE_VERSION: int = 5
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -14,6 +14,7 @@ var world_seed: int = 1573
 var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
+var condition: YunaCondition = YunaCondition.new()
 var combat_state: Dictionary = {
     "selected": "pistol",
     "pistol": {"clip": 8, "reserve": 32},
@@ -30,6 +31,12 @@ func _ready() -> void:
 func advance_time(delta: float) -> void:
     # Approximate 24 real minutes per in-game day, provisional balance.
     day_minutes = fposmod(day_minutes + delta, 1440.0)
+
+
+func sleep_at_home() -> void:
+    condition.rest_at_home()
+    day_minutes = fposmod(day_minutes + 360.0, 1440.0)
+    report("Good. You needed that, Yuna.")
 
 
 func report(message: String) -> void:
@@ -60,6 +67,7 @@ func snapshot() -> Dictionary:
         "world_flags": world_flags.duplicate(true),
         "inventory": bag.snapshot(),
         "storage": storage.snapshot(),
+        "condition": condition.snapshot(),
         "combat_state": combat_state.duplicate(true),
     }
 
@@ -93,6 +101,12 @@ func restore_snapshot(data: Dictionary) -> bool:
     var restored_storage := InventoryState.new(120)
     if not restored_storage.restore_snapshot(raw_storage as Dictionary):
         return false
+    var raw_condition: Variant = data.get("condition")
+    if typeof(raw_condition) != TYPE_DICTIONARY:
+        return false
+    var restored_condition := YunaCondition.new()
+    if not restored_condition.restore_snapshot(raw_condition as Dictionary):
+        return false
     var stored_combat: Variant = data.get("combat_state", null)
     if typeof(stored_combat) != TYPE_DICTIONARY:
         return false
@@ -121,6 +135,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     world_flags = (flags as Dictionary).duplicate(true)
     bag = restored_bag
     storage = restored_storage
+    condition = restored_condition
     combat_state = next_combat
     return true
 

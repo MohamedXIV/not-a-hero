@@ -20,6 +20,7 @@ func receive_robot_hit() -> void:
         return
     hits_taken += 1
     _stagger_left = 0.65
+    GameSession.condition.receive_impact(&"leg")
     GameSession.report("Ow! Move, Yuna. Find cover!")
 
 
@@ -35,8 +36,11 @@ func _physics_process(delta: float) -> void:
     _walking = direction.length_squared() > 0.01
     if direction.x != 0.0:
         _facing_right = direction.x > 0.0
-    var speed: float = walking_speed
-    if Input.is_action_pressed("sprint"):
+    var wants_sprint: bool = Input.is_action_pressed("sprint") and _walking
+    var can_run: bool = wants_sprint and GameSession.condition.can_sprint()
+    GameSession.condition.tick(delta, GameSession.current_level == "shelter", _walking, can_run)
+    var speed: float = walking_speed * GameSession.condition.movement_modifier()
+    if can_run:
         speed *= sprint_multiplier
     if _stagger_left > 0.0:
         speed *= 0.55

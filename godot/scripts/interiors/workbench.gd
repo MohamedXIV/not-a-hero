@@ -9,6 +9,9 @@ func get_interaction_label() -> String:
 
 
 func interact() -> bool:
+    if not GameSession.condition.can_focus():
+        GameSession.report("Not now, Yuna. You're shaking. Rest, then try again.")
+        return false
     if not GameSession.bag.try_craft(recipe):
         GameSession.report("Not enough materials. Three scraps and some wire, Yuna.")
         return false

@@ -41,3 +41,13 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - The guaranteed authored cache still provides the ingredients for the relay fuse, so progression never depends on good luck.
 - Extra salvage caches exist in the Ash Flats, Cable Edge and Relay Waste chunks. They use distinct `LootTableDefinition` Resources with weighted entry resources and deterministic seeds. Terrain itself is unchanged between worlds.
 - New games generate a world seed; it is saved with inventory/storage/looted flags. Opened caches remain depleted through chunk reload and save/reload. Region content is not rerolled by walking away.
+
+## P2a — embodied Yuna (first slice)
+
+- Yuna has no HP bar: contact causes a short stagger and a leg condition. The saved condition tracks arm/leg/torso severities independently, with slow rest recovery.
+- Stamina fuels sprinting, recovering during calm movement. Fatigue, nourishment and hydration shift *slowly*, separately; penalties to movement/reloading/aim are explicitly capped.
+- Sustained direct robot sight lowers **composure**. It is execution under stress, never intelligence. When overwhelmed Yuna defers precision crafting, but recovering in the small shelter always unlocks it again.
+- Near the original bed, **E rests** and advances six in-game hours. This restores focus and some injury condition; no daily excursion or forced task.
+- **Tab** opens condition details. During ordinary play, only pertinent fatigue/injury/stress cues appear, not six permanent bars.
+- Ordinary motor/vocal tics remain independent of fear and stealth. No random panic scream is implemented.
+- First aid, actual drinking/cooking, contextual bark selection and shelter decoration are later P2 slices, not falsely claimed by P2a.

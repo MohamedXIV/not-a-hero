@@ -17,6 +17,9 @@ func _check() -> void:
     _assert_ok(bag.try_receive({"scrap": 3, "wire": 1}), "inventory accepts valid loot")
     var storage: InventoryState = session.get("storage") as InventoryState
     _assert_ok(storage.try_receive({"capacitor": 6, "alloy": 4}), "storage holds supplies")
+    var vitals: YunaCondition = session.get("condition") as YunaCondition
+    vitals.receive_impact(&"leg")
+    vitals.apply_pressure(13.0)
     var snapshot: Dictionary = session.call("snapshot")
     _assert_ok(snapshot.get("world_flags", {}).get("world/ash_flats/relay_01", false), "switch included in snapshot")
 
@@ -24,11 +27,13 @@ func _check() -> void:
     session.set("current_level", "shelter")
     bag.try_spend(&"scrap", 3)
     storage.try_spend(&"alloy", 4)
+    vitals.rest_at_home()
     _assert_ok(session.call("restore_snapshot", snapshot), "valid snapshot accepted")
     _assert_ok(session.call("get_world_flag", &"world/ash_flats/relay_01"), "world switch restored")
     _assert_ok(session.get("current_level") == "outdoors", "current level restored")
     _assert_ok((session.get("bag") as InventoryState).quantity(&"scrap") == 3, "inventory restored")
     _assert_ok((session.get("storage") as InventoryState).quantity(&"alloy") == 4, "storage restored")
+    _assert_ok(int((session.get("condition") as YunaCondition).injuries["leg"]) == 1, "localized injury restored")
     _assert_ok(session.get("outdoor_position") == Vector2(1470.0, 290.0), "global player coordinate restored")
 
     var invalid: Dictionary = snapshot.duplicate(true)
@@ -41,6 +46,11 @@ func _check() -> void:
     invalid["storage"] = {"alloy": 2.4}
     _assert_ok(not session.call("restore_snapshot", invalid), "invalid storage rejected")
     _assert_ok(session.call("snapshot") == before, "invalid storage never partially mutates")
+    invalid = snapshot.duplicate(true)
+    invalid["condition"] = snapshot["condition"].duplicate(true)
+    invalid["condition"]["composure"] = -3.0
+    _assert_ok(not session.call("restore_snapshot", invalid), "invalid composure rejected")
+    _assert_ok(session.call("snapshot") == before, "invalid condition never partially mutates")
     invalid = snapshot.duplicate(true)
     invalid["version"] = 999
     _assert_ok(not session.call("restore_snapshot", invalid), "incompatible version rejected")
