@@ -105,6 +105,16 @@ const BARKS: Dictionary = {
         "lines": ["You grew that, Yuna. In real sunlight.",
                   "Just a handful, Yuna. Enough for today."]
     },
+    "mesa_rear_nook": {
+        "priority": 63, "cooldown": 110.0,
+        "lines": ["A screen and a blanket. Small things count, Yuna.",
+                  "You can hear the water, not the machinery. Better, Yuna."]
+    },
+    "mesa_first_night": {
+        "priority": 82, "cooldown": 3600.0,
+        "lines": ["You slept here, Yuna. You weren't brave. You were just safe.",
+                  "This isn't taking Little Nest away, Yuna. You can keep both."]
+    },
     "mesa_first_safe": {
         "priority": 70, "cooldown": 100.0,
         "lines": ["One safe room. Maybe the rest can wait, Yuna.",
