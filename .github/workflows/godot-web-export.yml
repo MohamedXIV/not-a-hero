@@ -1,10 +1,8 @@
 name: Godot Web export feasibility
 
+# Templates are >1 GB. Avoid pulling them for every PR synchronization event.
+# Manually dispatch for release/export readiness checks.
 on:
-  pull_request:
-    paths:
-      - "godot/export_presets.cfg"
-      - ".github/workflows/godot-web-export.yml"
   workflow_dispatch:
 
 permissions:
