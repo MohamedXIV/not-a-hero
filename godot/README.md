@@ -82,3 +82,12 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - A nearby familiar radio offers **E — unwind**, a 20-minute short personal ritual. It gently improves composure/fatigue and has a 180-minute cooldown. It never produces random stealth warnings, consumes supplies or grants compounding furniture happiness multipliers.
 - Sleeping advances six in-game hours of production. GameSave v9 persists progress, ready reserves and radio cooldown. Temporary visuals and story/audio remain unapproved.
 - This is a forgiving renewable safety floor for cozy play, **not a complete ecological/nutrient/energy simulation**. Tuning remains a future human playtest task.
+
+## P3a — Observe first, write later
+
+- Two **hand-authored** mechanical observation markers are placed in the existing continuous Ash Flats/Cable Forest scenes. Inspect with **E** to record facts Yuna actually sees. They are *not* random drops; either may be examined first and chunk reload never erases their entries.
+- Press **N** for the personal Notebook, **J** to read the next entry and **P** to pin/unpin it. Entries distinguish a concrete **observation**, a tentative **hypothesis**, and Yuna's optional **personal plan**. The notebook starts empty, not a list of predefined quests or tasks.
+- A tentative connection between the two findings appears **only after observing both**. It does not reveal a destination, code, hidden entrance, or story fact Yuna could not yet know.
+- Authored local remarks use the existing YunaVoice cooldown system. No LLM, network call or HUD quest arrow.
+- Validated v10 saves persist discovered IDs, order and selected pin. Malformed/unknown discoveries are rejected with no partial load. Geometry and clue locations remain fixed.
+- This is the **first P3 slice**, not the complete four-region world, advanced machine ecology, full notebook editing or the hidden mesa clue chain.

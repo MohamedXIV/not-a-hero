@@ -60,6 +60,16 @@ const BARKS: Dictionary = {
         "lines": ["Something warm. Good thinking, Yuna.",
                   "You remembered to eat, Yuna. Progress."]
     },
+    "noticed_conduit": {
+        "priority": 49, "cooldown": 60.0,
+        "lines": ["Warm cable. Still powered. Where does it go, Yuna?",
+                  "That's not dead wiring. Think, Yuna. Trace it."]
+    },
+    "noticed_junction": {
+        "priority": 49, "cooldown": 60.0,
+        "lines": ["Someone erased those markings. Why, Yuna?",
+                  "Converging lines... something used to be labeled here."]
+    },
     "quiet_ritual": {
         "priority": 28, "cooldown": 80.0,
         "lines": ["There. A little quiet, Yuna. You've earned it.",

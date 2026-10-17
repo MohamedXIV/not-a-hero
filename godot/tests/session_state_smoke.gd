@@ -26,6 +26,9 @@ func _check() -> void:
     var produce: HomeProduction = session.get("production") as HomeProduction
     produce.advance(480.0)
     _assert_ok(produce.ready_water == 2 and produce.ready_culture == 1, "time produces bounded supplies")
+    var journal: NotebookState = session.get("notebook") as NotebookState
+    _assert_ok(journal.discover("cable_scarred_junction"), "physically witnessed clue recorded")
+    _assert_ok(journal.pin("cable_scarred_junction"), "player may pin a known note")
     var snapshot: Dictionary = session.call("snapshot")
     _assert_ok(snapshot.get("world_flags", {}).get("world/ash_flats/relay_01", false), "switch included in snapshot")
 
@@ -36,6 +39,8 @@ func _check() -> void:
     storage.try_spend(&"alloy", 4)
     decorated.remove_at(0)
     produce.take_water()
+    journal = NotebookState.new()
+    session.set("notebook", journal)
     vitals.rest_at_home()
     _assert_ok(session.call("restore_snapshot", snapshot), "valid snapshot accepted")
     _assert_ok(session.call("get_world_flag", &"world/ash_flats/relay_01"), "world switch restored")
@@ -45,6 +50,8 @@ func _check() -> void:
     _assert_ok((session.get("storage") as InventoryState).quantity(&"alloy") == 4, "storage restored")
     _assert_ok((session.get("decor") as ShelterDecorState).count_kind("rug") == 1, "furniture restored")
     _assert_ok((session.get("production") as HomeProduction).ready_water == 2, "shelter production restored")
+    _assert_ok((session.get("notebook") as NotebookState).knows("cable_scarred_junction"), "observed clue restored")
+    _assert_ok((session.get("notebook") as NotebookState).pinned == "cable_scarred_junction", "pinned note restored")
     _assert_ok(int((session.get("condition") as YunaCondition).injuries["leg"]) == 1, "localized injury restored")
     _assert_ok(session.get("outdoor_position") == Vector2(1470.0, 290.0), "global player coordinate restored")
 
@@ -75,6 +82,10 @@ func _check() -> void:
     invalid["home_production"]["ready_culture"] = 900
     _assert_ok(not session.call("restore_snapshot", invalid), "uncapped production save rejected")
     _assert_ok(session.call("snapshot") == before, "invalid production never partially mutates game")
+    invalid = snapshot.duplicate(true)
+    invalid["notebook"]["observed"].append("unknown_invisible_secret")
+    _assert_ok(not session.call("restore_snapshot", invalid), "unseen/unknown note rejected")
+    _assert_ok(session.call("snapshot") == before, "invalid notebook cannot partially mutate game")
     invalid = snapshot.duplicate(true)
     invalid["version"] = 999
     _assert_ok(not session.call("restore_snapshot", invalid), "incompatible version rejected")

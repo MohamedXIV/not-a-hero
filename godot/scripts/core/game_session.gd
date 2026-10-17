@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 9
+const SAVE_VERSION: int = 10
 const HOME_SUPPLY_CAP: int = 12
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
@@ -16,6 +16,7 @@ var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
 var decor: ShelterDecorState = ShelterDecorState.new()
+var notebook: NotebookState = NotebookState.new()
 var production: HomeProduction = HomeProduction.new()
 var condition: YunaCondition = YunaCondition.new()
 var voice: YunaVoice = YunaVoice.new()
@@ -161,6 +162,7 @@ func snapshot() -> Dictionary:
         "inventory": bag.snapshot(),
         "storage": storage.snapshot(),
         "shelter_decor": decor.items(),
+        "notebook": notebook.snapshot(),
         "home_production": production.snapshot(),
         "condition": condition.snapshot(),
         "voice_settings": voice.settings_snapshot(),
@@ -200,6 +202,12 @@ func restore_snapshot(data: Dictionary) -> bool:
         return false
     var restored_decor := ShelterDecorState.new()
     if not restored_decor.restore_snapshot(data.get("shelter_decor", null)):
+        return false
+    var raw_notebook: Variant = data.get("notebook", null)
+    if typeof(raw_notebook) != TYPE_DICTIONARY:
+        return false
+    var restored_notebook := NotebookState.new()
+    if not restored_notebook.restore_snapshot(raw_notebook as Dictionary):
         return false
     var raw_production: Variant = data.get("home_production", null)
     if typeof(raw_production) != TYPE_DICTIONARY:
@@ -261,6 +269,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     bag = restored_bag
     storage = restored_storage
     decor = restored_decor
+    notebook = restored_notebook
     production = restored_production
     condition = restored_condition
     voice = restored_voice
