@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 1
+const SAVE_VERSION: int = 2
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -12,6 +12,9 @@ var shelter_position: Vector2 = Vector2(340.0, 365.0)
 var day_minutes: float = 8.0 * 60.0
 var world_seed: int = 1573
 var world_flags: Dictionary = {}
+var bag: InventoryState = InventoryState.new()
+var _feedback: String = ""
+var _feedback_until: int = 0
 
 
 func _ready() -> void:
@@ -21,6 +24,15 @@ func _ready() -> void:
 func advance_time(delta: float) -> void:
     # Approximate 24 real minutes per in-game day, provisional balance.
     day_minutes = fposmod(day_minutes + delta, 1440.0)
+
+
+func report(message: String) -> void:
+    _feedback = message
+    _feedback_until = Time.get_ticks_msec() + 3500
+
+
+func current_feedback() -> String:
+    return _feedback if Time.get_ticks_msec() < _feedback_until else ""
 
 
 func get_world_flag(key: StringName) -> bool:
@@ -40,6 +52,7 @@ func snapshot() -> Dictionary:
         "day_minutes": day_minutes,
         "world_seed": world_seed,
         "world_flags": world_flags.duplicate(true),
+        "inventory": bag.snapshot(),
     }
 
 
@@ -60,6 +73,12 @@ func restore_snapshot(data: Dictionary) -> bool:
     for flag_id: Variant in flags.keys():
         if typeof(flag_id) != TYPE_STRING or typeof(flags[flag_id]) != TYPE_BOOL:
             return false
+    var raw_inventory: Variant = data.get("inventory", null)
+    if typeof(raw_inventory) != TYPE_DICTIONARY:
+        return false
+    var restored_bag := InventoryState.new()
+    if not restored_bag.restore_snapshot(raw_inventory as Dictionary):
+        return false
     var clock: Variant = data.get("day_minutes", 480.0)
     if typeof(clock) != TYPE_FLOAT and typeof(clock) != TYPE_INT:
         return false
@@ -73,6 +92,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     day_minutes = fposmod(float(clock), 1440.0)
     world_seed = int(seed)
     world_flags = (flags as Dictionary).duplicate(true)
+    bag = restored_bag
     return true
 
 

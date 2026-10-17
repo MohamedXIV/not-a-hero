@@ -8,6 +8,7 @@ const LightFactory = preload("res://scripts/presentation/light_factory.gd")
 const EXIT_POSITION: Vector2 = Vector2(330, 443)
 
 @onready var yuna: CharacterBody2D = $Yuna
+@onready var workbench: Node2D = $Workbench
 
 
 func _ready() -> void:
@@ -62,8 +63,12 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
     GameSession.shelter_position = yuna.position
-    if yuna.position.distance_to(EXIT_POSITION) < 62.0 and Input.is_action_just_pressed("interact"):
-        transition_requested.emit("outdoors")
+    if Input.is_action_just_pressed("interact"):
+        if yuna.position.distance_to(EXIT_POSITION) < 62.0:
+            transition_requested.emit("outdoors")
+        elif yuna.position.distance_to(workbench.position) < 92.0:
+            workbench.call("interact")
+            GameSession.save_to_disk()
 
 
 func _draw() -> void:

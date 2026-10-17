@@ -28,6 +28,13 @@ func _process(delta: float) -> void:
     var minute: int = int(GameSession.day_minutes) % 60
     _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | F6 save\n" % [hour, minute]
     _hud.text += "Little Nest" if GameSession.current_level == "shelter" else "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
+    _hud.text += "\nScrap %d  |  Wire %d  |  Relay fuse %d" % [
+        GameSession.bag.quantity(&"scrap"),
+        GameSession.bag.quantity(&"wire"),
+        GameSession.bag.quantity(&"relay_fuse")
+    ]
+    if GameSession.current_feedback() != "":
+        _hud.text += "\n" + GameSession.current_feedback()
     if Time.get_ticks_msec() < _save_message_until:
         _hud.text += "\n" + _save_message
     if is_instance_valid(_level) and _level.has_method("get_interaction_hint"):

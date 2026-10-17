@@ -1,8 +1,10 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
 
 [ext_resource type="PackedScene" path="res://scenes/world/relay_switch.tscn" id="2_relay"]
+
+[ext_resource type="PackedScene" path="res://scenes/world/salvage_cache.tscn" id="3_salvage"]
 
 [node name="AshFlatsChunk" type="Node2D"]
 script = ExtResource("1_chunk")
@@ -10,3 +12,6 @@ style = 0
 
 [node name="RelaySwitch" parent="." instance=ExtResource("2_relay")]
 position = Vector2(510, 285)
+
+[node name="SalvageCache" parent="." instance=ExtResource("3_salvage")]
+position = Vector2(400, 515)

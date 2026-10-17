@@ -38,7 +38,9 @@ func get_interaction_hint() -> String:
         return "E — Enter Little Nest"
     for node: Node in get_tree().get_nodes_in_group("world_interactables"):
         if node is Node2D and yuna.global_position.distance_to((node as Node2D).global_position) < 74.0:
-            return "E — Toggle maintenance relay"
+            if node.has_method("get_interaction_label"):
+                return str(node.call("get_interaction_label"))
+            return "E — Inspect machine"
     return ""
 
 

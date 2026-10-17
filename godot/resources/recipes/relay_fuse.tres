@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/inventory/recipe_definition.gd" id="1_recipe"]
+[ext_resource type="Resource" path="res://resources/items/relay_fuse.tres" id="2_item"]
+
+[resource]
+script = ExtResource("1_recipe")
+recipe_id = &"craft_relay_fuse"
+ingredients = {
+"scrap": 3,
+"wire": 1
+}
+output_item = ExtResource("2_item")
+output_quantity = 1

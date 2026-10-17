@@ -17,10 +17,24 @@ func _ready() -> void:
     _sync_visuals()
 
 
-func interact() -> void:
-    is_active = not is_active
-    GameSession.set_world_flag(persistent_id, is_active)
+func get_interaction_label() -> String:
+    if is_active:
+        return "Maintenance relay is powered"
+    return "E — Install handmade fuse" if GameSession.bag.quantity(&"relay_fuse") > 0 else "Relay missing fuse. Could you craft one, Yuna?"
+
+
+func interact() -> bool:
+    if is_active:
+        GameSession.report("Still running. Good work, Yuna.")
+        return false
+    if not GameSession.bag.try_spend(&"relay_fuse", 1):
+        GameSession.report("The relay needs a fuse. The workbench, Yuna. Think.")
+        return false
+    is_active = true
+    GameSession.set_world_flag(persistent_id, true)
+    GameSession.report("It works. You actually fixed it.")
     _sync_visuals()
+    return true
 
 
 func _sync_visuals() -> void:
