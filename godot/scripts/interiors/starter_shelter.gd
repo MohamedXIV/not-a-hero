@@ -17,6 +17,7 @@ const RADIO_POINT: Vector2 = Vector2(408, 128)
 @onready var workbench: Node2D = $Workbench
 @onready var chest: Node2D = $StorageChest
 @onready var decorator: Node2D = $ShelterDecorator
+var _interact_held: bool = false
 
 
 func _ready() -> void:
@@ -95,7 +96,10 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
     GameSession.shelter_position = yuna.position
-    if Input.is_action_just_pressed("interact") and not decorator.edit_mode:
+    if not Input.is_action_pressed("interact"):
+        _interact_held = false
+    if Input.is_action_just_pressed("interact") and not _interact_held and not decorator.edit_mode:
+        _interact_held = true
         _interact_nearby()
     if (Input.is_action_just_pressed("craft_dressing") and not decorator.edit_mode
             and yuna.position.distance_to(workbench.position) < 92.0):
