@@ -25,9 +25,8 @@ func _check() -> void:
         _fail("Yuna cannot find the bed interaction")
         return
     var clock: float = GameSession.day_minutes
-    Input.action_press("interact")
-    await get_tree().process_frame
-    Input.action_release("interact")
+    # Call the same proximity handler used by the E input branch.
+    shelter.call("_interact_nearby")
     if not GameSession.condition.can_focus():
         _fail("Actual bed interaction didn't restore focus")
         return

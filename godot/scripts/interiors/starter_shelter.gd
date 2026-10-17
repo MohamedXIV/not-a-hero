@@ -78,17 +78,21 @@ func _physics_process(_delta: float) -> void:
 func _process(_delta: float) -> void:
     GameSession.shelter_position = yuna.position
     if Input.is_action_just_pressed("interact"):
-        if yuna.position.distance_to(EXIT_POSITION) < 62.0:
-            transition_requested.emit("outdoors")
-        elif yuna.position.distance_to(BED_USE_POINT) < 62.0:
-            GameSession.sleep_at_home()
-            GameSession.save_to_disk()
-        elif yuna.position.distance_to(chest.position) < 70.0:
-            chest.call("interact", Input.is_action_pressed("sprint"))
-            GameSession.save_to_disk()
-        elif yuna.position.distance_to(workbench.position) < 92.0:
-            workbench.call("interact")
-            GameSession.save_to_disk()
+        _interact_nearby()
+
+
+func _interact_nearby() -> void:
+    if yuna.position.distance_to(EXIT_POSITION) < 62.0:
+        transition_requested.emit("outdoors")
+    elif yuna.position.distance_to(BED_USE_POINT) < 62.0:
+        GameSession.sleep_at_home()
+        GameSession.save_to_disk()
+    elif yuna.position.distance_to(chest.position) < 70.0:
+        chest.call("interact", Input.is_action_pressed("sprint"))
+        GameSession.save_to_disk()
+    elif yuna.position.distance_to(workbench.position) < 92.0:
+        workbench.call("interact")
+        GameSession.save_to_disk()
 
 
 func _draw() -> void:
