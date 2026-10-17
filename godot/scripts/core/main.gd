@@ -6,23 +6,30 @@ const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_she
 
 var _level: Node2D
 var _hud: Label
+var _save_button: Button
+var _save_message: String = ""
+var _save_message_until: int = 0
 var _last_transition_msec: int = -100000
 
 
 func _ready() -> void:
-    GameSession.load_from_disk()
+    var had_save: bool = GameSession.load_from_disk()
     _build_hud()
     _open_level(GameSession.current_level)
+    if had_save:
+        _flash_save_status("Progress restored")
 
 
 func _process(delta: float) -> void:
     GameSession.advance_time(delta)
     if Input.is_action_just_pressed("quick_save"):
-        GameSession.save_to_disk()
+        _write_save()
     var hour: int = int(GameSession.day_minutes / 60.0)
     var minute: int = int(GameSession.day_minutes) % 60
-    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | F5 save\n" % [hour, minute]
+    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | F6 save\n" % [hour, minute]
     _hud.text += "Little Nest" if GameSession.current_level == "shelter" else "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
+    if Time.get_ticks_msec() < _save_message_until:
+        _hud.text += "\n" + _save_message
     if is_instance_valid(_level) and _level.has_method("get_interaction_hint"):
         var hint: String = _level.call("get_interaction_hint")
         if hint != "":
@@ -58,3 +65,25 @@ func _build_hud() -> void:
     _hud.add_theme_color_override("font_color", Color("#f5dfba"))
     _hud.add_theme_font_size_override("font_size", 17)
     overlay.add_child(_hud)
+
+    # Genuine save control; browser keys such as F5 may trigger a page reload.
+    _save_button = Button.new()
+    _save_button.name = "SaveButton"
+    _save_button.text = "Save"
+    _save_button.size = Vector2(104, 42)
+    _save_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+    _save_button.position = Vector2(1152, 15)
+    _save_button.pressed.connect(_write_save)
+    overlay.add_child(_save_button)
+
+
+func _write_save() -> void:
+    if GameSession.save_to_disk():
+        _flash_save_status("Progress saved")
+    else:
+        _flash_save_status("Save failed — check storage")
+
+
+func _flash_save_status(message: String) -> void:
+    _save_message = message
+    _save_message_until = Time.get_ticks_msec() + 2500

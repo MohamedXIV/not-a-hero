@@ -13,6 +13,10 @@ func _check() -> void:
     GameSession.shelter_position = Vector2(340, 365)
     var main: Node2D = MAIN_SCENE.instantiate() as Node2D
     add_child(main)
+    var save_button: Button = main.get("_save_button") as Button
+    if save_button == null or save_button.text != "Save" or not save_button.visible:
+        _fail("save button missing from normal startup")
+        return
     var shelter: Node2D = main.get("_level") as Node2D
     if shelter == null:
         _fail("shelter failed to instantiate")

@@ -10,7 +10,7 @@ static func install_defaults() -> void:
     _ensure_key(&"move_down", KEY_S)
     _ensure_key(&"interact", KEY_E)
     _ensure_key(&"sprint", KEY_SHIFT)
-    _ensure_key(&"quick_save", KEY_F5)
+    _ensure_key(&"quick_save", KEY_F6)
 
 
 static func _ensure_key(action: StringName, key: int) -> void:
