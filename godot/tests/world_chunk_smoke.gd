@@ -8,6 +8,10 @@ func _ready() -> void:
 
 
 func _check() -> void:
+    for action_name: StringName in [&"move_left", &"move_right", &"move_up", &"move_down", &"interact", &"sprint", &"quick_save"]:
+        if not InputMap.has_action(action_name):
+            _fail("Input action not registered at boot: " + String(action_name))
+            return
     GameSession.current_level = "outdoors"
     GameSession.outdoor_position = Vector2(160.0, 330.0)
     GameSession.set_world_flag(&"world/ash_flats/relay_01", false)
