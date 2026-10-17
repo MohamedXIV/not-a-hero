@@ -23,10 +23,10 @@ func _check() -> void:
     var yuna: CharacterBody2D = outdoors.get_node("Yuna") as CharacterBody2D
     yuna.position = Vector2(1500, 280)
     outdoors.call("_sync_chunks")
-    _assert_ok(outdoors.get_node_or_null("AshFlatsChunk") == null or outdoors.get_node("AshFlatsChunk").is_queued_for_deletion(), "far chunk retired")
-    yuna.position = Vector2(160, 330)
-    # Pending deletion can coexist for one frame, so the follow-up check needs to wait.
+    # Let queue_free finish before re-entering the chunk (avoid transient name collision).
     await process_frame
+    _assert_ok(outdoors.get_node_or_null("AshFlatsChunk") == null, "far chunk removed")
+    yuna.position = Vector2(160, 330)
     outdoors.call("_sync_chunks")
     await process_frame
     relay = outdoors.get_node_or_null("AshFlatsChunk/RelaySwitch") as Node2D
