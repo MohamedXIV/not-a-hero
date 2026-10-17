@@ -70,6 +70,26 @@ const BARKS: Dictionary = {
         "lines": ["An empty press still keeps time. Who's conducting, Yuna?",
                   "No operators. And yet it cycles. Watch the rhythm, Yuna."]
     },
+    "mesa_hatch_found": {
+        "priority": 65, "cooldown": 100.0,
+        "lines": ["Those gouges... the machines tried to get inside. Why, Yuna?",
+                  "A hatch hiding in the rock. You really found something, Yuna."]
+    },
+    "mesa_access_open": {
+        "priority": 70, "cooldown": 100.0,
+        "lines": ["That actually worked. You opened it, Yuna.",
+                  "Not a miracle. Just engineering. Remember that, Yuna."]
+    },
+    "mesa_first_look": {
+        "priority": 67, "cooldown": 100.0,
+        "lines": ["Sunlight... in here? Oh, Yuna. Look at this.",
+                  "It's enormous. You can always go home, Yuna."]
+    },
+    "mesa_first_safe": {
+        "priority": 70, "cooldown": 100.0,
+        "lines": ["One safe room. Maybe the rest can wait, Yuna.",
+                  "You did it. And you don't have to move here today."]
+    },
     "noticed_east_feeder": {
         "priority": 49, "cooldown": 60.0,
         "lines": ["That feeder heads into the rock. Someone hid the labels, Yuna.",
