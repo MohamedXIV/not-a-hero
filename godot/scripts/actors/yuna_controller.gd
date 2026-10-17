@@ -48,7 +48,8 @@ func _physics_process(delta: float) -> void:
     var wants_sprint: bool = Input.is_action_pressed("sprint") and _walking
     var can_run: bool = wants_sprint and GameSession.condition.can_sprint()
     var at_safe_home: bool = (GameSession.current_level == "shelter"
-            or (GameSession.current_level == "mesa" and GameSession.mesa.power_online()))
+            or (GameSession.current_level == "mesa" and GameSession.mesa.power_online())
+            or (GameSession.current_level == "mesa_depth" and GameSession.mesa.depth_warm))
     GameSession.condition.tick(delta, at_safe_home, _walking, can_run)
     var speed: float = walking_speed * GameSession.condition.movement_modifier()
     if can_run:

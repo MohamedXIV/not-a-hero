@@ -99,62 +99,92 @@ func _process(_delta: float) -> void:
         _use_spare_part()
 
 
+func _interaction_target() -> String:
+    # The closest station always owns BOTH the visible E prompt and the action,
+    # especially around the lift/acoustic screen and cot/service carrier.
+    # Never let a wider-radius station steal the player's nearer choice.
+    var sites: Array[Dictionary] = [
+        {"id": "exit", "point": EXIT_POINT, "range": 68.0},
+        {"id": "safety", "point": SAFETY_PANEL, "range": 75.0},
+        {"id": "power", "point": POWER_PANEL, "range": 62.0},
+        {"id": "flow", "point": FLOW_PANEL, "range": 60.0},
+        {"id": "court", "point": COURT_CONTROL, "range": 57.0},
+        {"id": "greens", "point": GROWING_BED, "range": 57.0},
+        {"id": "water", "point": WATER_FAUCET, "range": 52.0},
+        {"id": "bench", "point": REST_BENCH, "range": 62.0},
+        {"id": "lift", "point": depth_lift.position, "range": MesaDepthLift.RADIUS},
+        {"id": "carrier", "point": carrier_panel.position, "range": MesaCarrierPanel.INTERACT_RADIUS},
+        {"id": "nook", "point": MesaRearNook.PANEL_POINT, "range": MesaRearNook.PANEL_RADIUS},
+        {"id": "nook", "point": MesaRearNook.REST_POINT, "range": MesaRearNook.REST_RADIUS},
+    ]
+    var selected: String = ""
+    var nearest: float = INF
+    for site: Dictionary in sites:
+        var distance: float = yuna.position.distance_to(site["point"] as Vector2)
+        if distance < float(site["range"]) and distance < nearest:
+            nearest = distance
+            selected = String(site["id"])
+    return selected
+
+
 func get_interaction_hint() -> String:
     if decorator.edit_mode:
         return str(decorator.call("hint"))
-    if yuna.position.distance_to(EXIT_POINT) < 68.0:
-        return "E — Return outside (Little Nest remains home)"
-    if yuna.position.distance_to(SAFETY_PANEL) < 75.0:
-        return ("E — Check safe sector controls" if GameSession.mesa.first_sector_safe
-                else "E — Isolate dangerous power / secure first room")
-    if yuna.position.distance_to(POWER_PANEL) < 62.0:
-        if not GameSession.mesa.first_sector_safe:
-            return "Isolate the first room before servicing live power."
-        return ("Main power restored" if GameSession.mesa.power_online()
-                else "E — Hand-start power (%d/2) | Q — Use capacitor" % GameSession.mesa.power_progress)
-    if yuna.position.distance_to(FLOW_PANEL) < 60.0:
-        if not GameSession.mesa.power_online():
-            return "Circulation needs power first."
-        return ("Coolant circulation stable" if GameSession.mesa.flow_online()
-                else "E — Manually purge loop (%d/2) | Q — Use filter" % GameSession.mesa.flow_progress)
-    if yuna.position.distance_to(COURT_CONTROL) < 57.0:
-        if not GameSession.mesa.flow_online():
-            return "Sun court irrigation: restore the coolant loop first."
-        return ("The sun court is alive" if GameSession.mesa.court_restored()
-                else "E — Rebuild growing-court valves (%d/2)" % GameSession.mesa.court_progress)
-    if yuna.position.distance_to(GROWING_BED) < 57.0:
-        if not GameSession.mesa.court_restored():
-            return "The old root bed needs clean circulation."
-        return ("E — Eat fresh courtyard greens" if GameSession.mesa.court_ready
-                else "Young shoots growing in natural light")
-    if yuna.position.distance_to(WATER_FAUCET) < 52.0:
-        return "E — Drink clean water" if GameSession.mesa.flow_online() else "Water tap: no clean flow yet."
-    if yuna.position.distance_to(REST_BENCH) < 62.0:
-        return "E — Rest on the recovered bench" if GameSession.mesa.power_online() else "Bench: too cold and dark to settle yet."
-    var depth_hint: String = depth_lift.hint_at(yuna.global_position)
-    if not depth_hint.is_empty():
-        return depth_hint
-    var carrier_hint: String = carrier_panel.hint_at(yuna.global_position)
-    if not carrier_hint.is_empty():
-        return carrier_hint
-    var nook_hint: String = rear_nook.hint_at(yuna.position)
-    if not nook_hint.is_empty():
-        return nook_hint
+    match _interaction_target():
+        "exit":
+            return "E — Return outside (Little Nest remains home)"
+        "safety":
+            return ("E — Check safe sector controls" if GameSession.mesa.first_sector_safe
+                    else "E — Isolate dangerous power / secure first room")
+        "power":
+            if not GameSession.mesa.first_sector_safe:
+                return "Isolate the first room before servicing live power."
+            return ("Main power restored" if GameSession.mesa.power_online()
+                    else "E — Hand-start power (%d/2) | Q — Use capacitor" % GameSession.mesa.power_progress)
+        "flow":
+            if not GameSession.mesa.power_online():
+                return "Circulation needs power first."
+            return ("Coolant circulation stable" if GameSession.mesa.flow_online()
+                    else "E — Manually purge loop (%d/2) | Q — Use filter" % GameSession.mesa.flow_progress)
+        "court":
+            if not GameSession.mesa.flow_online():
+                return "Sun court irrigation: restore the coolant loop first."
+            return ("The sun court is alive" if GameSession.mesa.court_restored()
+                    else "E — Rebuild growing-court valves (%d/2)" % GameSession.mesa.court_progress)
+        "greens":
+            if not GameSession.mesa.court_restored():
+                return "The old root bed needs clean circulation."
+            return ("E — Eat fresh courtyard greens" if GameSession.mesa.court_ready
+                    else "Young shoots growing in natural light")
+        "water":
+            return "E — Drink clean water" if GameSession.mesa.flow_online() else "Water tap: no clean flow yet."
+        "bench":
+            return "E — Rest on the recovered bench" if GameSession.mesa.power_online() else "Bench: too cold and dark to settle yet."
+        "lift":
+            return depth_lift.hint_at(yuna.global_position)
+        "carrier":
+            return carrier_panel.hint_at(yuna.global_position)
+        "nook":
+            return rear_nook.hint_at(yuna.position)
     return "A shaft of sunlight. " + str(decorator.call("hint"))
 
 
 func _interact_nearby() -> void:
-    if depth_lift.interact_at(yuna.global_position):
+    var target: String = _interaction_target()
+    if target == "lift":
+        depth_lift.interact_at(yuna.global_position)
         return
-    if carrier_panel.interact_at(yuna.global_position):
+    if target == "carrier":
+        carrier_panel.interact_at(yuna.global_position)
         return
-    if rear_nook.interact_at(yuna.position):
+    if target == "nook":
+        rear_nook.interact_at(yuna.position)
         return
-    if yuna.position.distance_to(EXIT_POINT) < 68.0:
+    if target == "exit":
         # Always emerge beside the discovered exterior doorway.
         GameSession.outdoor_position = Vector2(2420, 172)
         transition_requested.emit("outdoors")
-    elif yuna.position.distance_to(SAFETY_PANEL) < 75.0:
+    elif target == "safety":
         if GameSession.mesa.make_first_sector_safe():
             GameSession.speak(&"mesa_first_safe")
             GameSession.report("That room is yours to breathe in, Yuna. The rest can wait.")
@@ -162,7 +192,7 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("First sector stabilized. The deeper facility still needs work.")
-    elif yuna.position.distance_to(POWER_PANEL) < 62.0:
+    elif target == "power":
         if GameSession.mesa.work_power():
             GameSession.advance_time(MesaState.WORK_MINUTES)
             _refresh_visuals()
@@ -173,7 +203,7 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("Secure the first room before touching the power bus.")
-    elif yuna.position.distance_to(FLOW_PANEL) < 60.0:
+    elif target == "flow":
         if GameSession.mesa.work_flow():
             GameSession.advance_time(MesaState.WORK_MINUTES)
             _refresh_visuals()
@@ -184,7 +214,7 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("The pumps need working power first, Yuna.")
-    elif yuna.position.distance_to(COURT_CONTROL) < 57.0:
+    elif target == "court":
         if GameSession.mesa.restore_court_stage():
             GameSession.advance_time(MesaState.WORK_MINUTES)
             _refresh_visuals()
@@ -196,7 +226,7 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("The growing court needs clean circulation first.")
-    elif yuna.position.distance_to(GROWING_BED) < 57.0:
+    elif target == "greens":
         if GameSession.mesa.harvest_court(GameSession.condition):
             _refresh_visuals()
             GameSession.speak(&"mesa_greens")
@@ -204,13 +234,13 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("Let the roots grow, or save the greens until you're hungry.")
-    elif yuna.position.distance_to(WATER_FAUCET) < 52.0:
+    elif target == "water":
         if GameSession.mesa.flow_online() and GameSession.condition.drink_water():
             GameSession.report("Clean water, from a place you repaired yourself.")
             GameSession.save_to_disk()
         else:
             GameSession.report("The tap is dry, or you're not thirsty.")
-    elif yuna.position.distance_to(REST_BENCH) < 62.0:
+    elif target == "bench":
         if GameSession.mesa.power_online():
             GameSession.sleep_at_home()
             _refresh_visuals()
@@ -226,7 +256,8 @@ func _enter_depth() -> void:
 
 
 func _use_spare_part() -> void:
-    if yuna.position.distance_to(POWER_PANEL) < 62.0:
+    var target: String = _interaction_target()
+    if target == "power":
         if GameSession.mesa.replace_power_coupler(GameSession.bag):
             _refresh_visuals()
             GameSession.speak(&"mesa_power_restored")
@@ -234,7 +265,7 @@ func _use_spare_part() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("A capacitor would help. The manual start still works.")
-    elif yuna.position.distance_to(FLOW_PANEL) < 60.0:
+    elif target == "flow":
         if GameSession.mesa.replace_flow_filter(GameSession.bag):
             _refresh_visuals()
             GameSession.speak(&"mesa_flow_restored")
