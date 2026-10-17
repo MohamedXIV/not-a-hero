@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/mesa/mesa_depth_lift.gd" id="1_lift"]
+
+[node name="DepthLift" type="Node2D"]
+position = Vector2(1110, 242)
+script = ExtResource("1_lift")
