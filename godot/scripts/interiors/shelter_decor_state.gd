@@ -15,6 +15,9 @@ const BLOCKED: Array[Rect2] = [
     Rect2(310, 146, 80, 67),   # storage
     Rect2(285, 409, 93, 76),   # exit
     Rect2(275, 295, 106, 111), # clear path to the hatch
+    Rect2(557, 355, 24, 65), # condenser, access remains clear
+    Rect2(79, 412, 34, 55),  # culture tray
+    Rect2(385, 106, 45, 47), # radio
 ]
 const DEFINITIONS: Dictionary = {
     "rug": preload("res://resources/decor/rug.tres"),

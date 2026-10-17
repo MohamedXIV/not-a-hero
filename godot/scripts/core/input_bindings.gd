@@ -16,6 +16,7 @@ static func install_defaults() -> void:
     _ensure_key(&"subtitle_toggle", KEY_B)
     _ensure_key(&"decorate", KEY_G)
     _ensure_key(&"decor_pickup", KEY_X)
+    _ensure_key(&"craft_dressing", KEY_C)
     _ensure_key(&"weapon_pistol", KEY_1)
     _ensure_key(&"weapon_rifle", KEY_2)
     _ensure_key(&"reload", KEY_R)

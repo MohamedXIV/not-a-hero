@@ -84,6 +84,9 @@ func _process(delta: float) -> void:
             int(GameSession.home_supplies["meals"]),
             int(GameSession.home_supplies["water"]),
         ]
+        _status_detail.text += "\nCondenser: %d ready | Culture: %d ready" % [
+            GameSession.production.ready_water, GameSession.production.ready_culture
+        ]
         _status_detail.text += "\nV: Incidental remarks %s  |  B: Subtitles %s" % [
             "On" if GameSession.voice.incidental_enabled else "Off",
             "On" if GameSession.voice.subtitles_enabled else "Off",

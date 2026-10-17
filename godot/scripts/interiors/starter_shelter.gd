@@ -9,6 +9,9 @@ const EXIT_POSITION: Vector2 = Vector2(330, 443)
 const BED_USE_POINT: Vector2 = Vector2(215, 279)
 const COOK_POINT: Vector2 = Vector2(196, 369)
 const WATER_POINT: Vector2 = Vector2(290, 151)
+const CONDENSER_POINT: Vector2 = Vector2(570, 395)
+const CULTURE_POINT: Vector2 = Vector2(92, 441)
+const RADIO_POINT: Vector2 = Vector2(408, 128)
 
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var workbench: Node2D = $Workbench
@@ -73,6 +76,12 @@ func get_interaction_hint() -> String:
         return "E — Eat a prepared meal"
     if yuna.position.distance_to(WATER_POINT) < 38.0:
         return "E — Drink clean water"
+    if yuna.position.distance_to(CONDENSER_POINT) < 34.0:
+        return "E — Collect condensed water (%d ready)" % GameSession.production.ready_water
+    if yuna.position.distance_to(CULTURE_POINT) < 34.0:
+        return "E — Harvest food + fiber (%d ready)" % GameSession.production.ready_culture
+    if yuna.position.distance_to(RADIO_POINT) < 34.0:
+        return "E — Sit with the radio / unwind"
     if yuna.position.distance_to(chest.position) < 70.0:
         return str(chest.call("get_interaction_label"))
     if yuna.position.distance_to(workbench.position) < 92.0:
@@ -88,6 +97,10 @@ func _process(_delta: float) -> void:
     GameSession.shelter_position = yuna.position
     if Input.is_action_just_pressed("interact") and not decorator.edit_mode:
         _interact_nearby()
+    if (Input.is_action_just_pressed("craft_dressing") and not decorator.edit_mode
+            and yuna.position.distance_to(workbench.position) < 92.0):
+        if workbench.call("craft_field_dressing"):
+            GameSession.save_to_disk()
 
 
 func _interact_nearby() -> void:
@@ -101,6 +114,15 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
     elif yuna.position.distance_to(WATER_POINT) < 38.0:
         if GameSession.drink_at_home():
+            GameSession.save_to_disk()
+    elif yuna.position.distance_to(CONDENSER_POINT) < 34.0:
+        if GameSession.collect_condensed_water():
+            GameSession.save_to_disk()
+    elif yuna.position.distance_to(CULTURE_POINT) < 34.0:
+        if GameSession.harvest_culture():
+            GameSession.save_to_disk()
+    elif yuna.position.distance_to(RADIO_POINT) < 34.0:
+        if GameSession.unwind_at_home():
             GameSession.save_to_disk()
     elif yuna.position.distance_to(chest.position) < 70.0:
         chest.call("interact", Input.is_action_pressed("sprint"))
@@ -133,3 +155,11 @@ func _draw() -> void:
     draw_circle(Vector2(150, 225), 8, Color("#ffddaa"))
     draw_circle(WATER_POINT, 13, Color("#477e85"))
     draw_circle(WATER_POINT, 6, Color("#b0d6d1"))
+    # First-pass shapes: heat-recycling condenser, symbiotic culture tray and
+    # familiar radio. Visual style remains explicitly undecided.
+    draw_rect(Rect2(CONDENSER_POINT - Vector2(16, 26), Vector2(31, 49)), Color("#435b60"))
+    draw_circle(CONDENSER_POINT - Vector2(1, 9), 10, Color("#85c3bb"))
+    draw_rect(Rect2(CULTURE_POINT - Vector2(18, 12), Vector2(38, 28)), Color("#455044"))
+    draw_circle(CULTURE_POINT, 8, Color("#86ae68"))
+    draw_rect(Rect2(RADIO_POINT - Vector2(22, 12), Vector2(44, 24)), Color("#514139"))
+    draw_circle(RADIO_POINT + Vector2(11, 0), 5, Color("#e4b47d"))
