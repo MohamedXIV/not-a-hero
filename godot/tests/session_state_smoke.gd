@@ -13,14 +13,18 @@ func _check() -> void:
     session.call("set_world_flag", &"world/ash_flats/relay_01", true)
     session.set("current_level", "outdoors")
     session.set("outdoor_position", Vector2(1470.0, 290.0))
+    var bag: InventoryState = session.get("bag") as InventoryState
+    _assert_ok(bag.try_receive({"scrap": 3, "wire": 1}), "inventory accepts valid loot")
     var snapshot: Dictionary = session.call("snapshot")
     _assert_ok(snapshot.get("world_flags", {}).get("world/ash_flats/relay_01", false), "switch included in snapshot")
 
     session.call("set_world_flag", &"world/ash_flats/relay_01", false)
     session.set("current_level", "shelter")
+    bag.try_spend(&"scrap", 3)
     _assert_ok(session.call("restore_snapshot", snapshot), "valid snapshot accepted")
     _assert_ok(session.call("get_world_flag", &"world/ash_flats/relay_01"), "world switch restored")
     _assert_ok(session.get("current_level") == "outdoors", "current level restored")
+    _assert_ok((session.get("bag") as InventoryState).quantity(&"scrap") == 3, "inventory restored")
     _assert_ok(session.get("outdoor_position") == Vector2(1470.0, 290.0), "global player coordinate restored")
 
     var invalid: Dictionary = snapshot.duplicate(true)

@@ -12,6 +12,8 @@ func _check() -> void:
             return
     GameSession.outdoor_position = Vector2(160, 330)
     GameSession.set_world_flag(&"world/ash_flats/relay_01", false)
+    GameSession.set_world_flag(&"world/ash_flats/scrap_cache_01", false)
+    GameSession.bag = InventoryState.new()
     var scene: PackedScene = load("res://scenes/world/outdoors.tscn") as PackedScene
     var outdoors: Node2D = scene.instantiate() as Node2D
     add_child(outdoors)
@@ -24,7 +26,19 @@ func _check() -> void:
     if relay == null:
         _fail("relay missing from authored origin chunk")
         return
-    relay.call("interact")
+    var cache: Node2D = outdoors.get_node_or_null("WorldStreamer/AshFlatsChunk/SalvageCache") as Node2D
+    if cache == null or not cache.call("interact"):
+        _fail("P1 salvage cache failed to yield parts")
+        return
+    if GameSession.bag.quantity(&"scrap") != 3 or GameSession.bag.quantity(&"wire") != 1:
+        _fail("salvage was not transacted into inventory")
+        return
+    if not GameSession.bag.try_craft(load("res://resources/recipes/relay_fuse.tres") as RecipeDefinition):
+        _fail("crafting the relay fuse failed")
+        return
+    if not relay.call("interact"):
+        _fail("crafted relay fuse failed to activate the machine")
+        return
     if not GameSession.get_world_flag(&"world/ash_flats/relay_01"):
         _fail("relay did not change the authoritative world")
         return
@@ -39,10 +53,17 @@ func _check() -> void:
     outdoors.call("_sync_chunks")
     await get_tree().process_frame
     relay = outdoors.get_node_or_null("WorldStreamer/AshFlatsChunk/RelaySwitch") as Node2D
+    cache = outdoors.get_node_or_null("WorldStreamer/AshFlatsChunk/SalvageCache") as Node2D
+    if cache == null or not cache.get("looted"):
+        _fail("salvage cache rerolled after chunk reload")
+        return
+    if cache.call("interact") or GameSession.bag.quantity(&"scrap") != 0:
+        _fail("reloaded cache duplicated items")
+        return
     if relay == null or not relay.get("is_active"):
         _fail("relay didn't restore after chunk unload/reload")
         return
-    print("PASS: authored chunk Resources, lifecycle and persistent relay state")
+    print("PASS: authored chunk life, persistent salvage, atomic crafting and machine repair")
     outdoors.queue_free()
     get_tree().quit(0)
 
