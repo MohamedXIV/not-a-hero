@@ -110,7 +110,7 @@ func _check() -> void:
     world.call("_sync_chunks")
     await get_tree().process_frame
     cache = world.get_node_or_null("WorldStreamer/CoolantBasinChunk/FilterCache") as Node2D
-    if cache == null or not cache.looted or cache.call("interact"):
+    if cache == null or not bool(cache.get("looted")) or cache.call("interact"):
         _fail("Returning to basin regenerated looted filter cache")
         return
     if GameSession.bag.snapshot() != loot_state:
