@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="LootTableDefinition" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/loot_table_definition.gd" id="1_table"]
+[ext_resource type="Script" path="res://scripts/world/loot_entry_definition.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://resources/items/wire.tres" id="3_wire"]
+[ext_resource type="Resource" path="res://resources/items/capacitor.tres" id="4_cap"]
+[ext_resource type="Resource" path="res://resources/items/scrap.tres" id="5_scrap"]
+
+[sub_resource type="Resource" id="1_wire"]
+script = ExtResource("2_entry")
+item = ExtResource("3_wire")
+weight = 6
+min_amount = 1
+max_amount = 3
+
+[sub_resource type="Resource" id="2_cap"]
+script = ExtResource("2_entry")
+item = ExtResource("4_cap")
+weight = 4
+min_amount = 1
+max_amount = 2
+
+[sub_resource type="Resource" id="3_scrap"]
+script = ExtResource("2_entry")
+item = ExtResource("5_scrap")
+weight = 1
+min_amount = 1
+max_amount = 2
+
+[resource]
+script = ExtResource("1_table")
+table_id = &"cable_forest_electronics"
+draws = 2
+entries = Array[ExtResource("2_entry")]([SubResource("1_wire"), SubResource("2_cap"), SubResource("3_scrap")])
