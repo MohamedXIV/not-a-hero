@@ -8,6 +8,8 @@ var _level: Node2D
 var _hud: Label
 var _status_detail: Label
 var _subtitle: Label
+var _notebook_display: Label
+var _notebook_page: int = 0
 var _save_button: Button
 var _save_message: String = ""
 var _save_message_until: int = 0
@@ -39,11 +41,22 @@ func _process(delta: float) -> void:
         GameSession.voice.subtitles_enabled = not GameSession.voice.subtitles_enabled
         GameSession.report("Self-talk subtitles: %s" % ("on" if GameSession.voice.subtitles_enabled else "off"))
         GameSession.save_to_disk()
+    if Input.is_action_just_pressed("open_notebook"):
+        _notebook_display.visible = not _notebook_display.visible
+    if _notebook_display.visible:
+        if Input.is_action_just_pressed("next_notebook"):
+            _notebook_page += 1
+        if Input.is_action_just_pressed("pin_notebook"):
+            var note_ids: Array[String] = GameSession.notebook.observed_ids()
+            if not note_ids.is_empty():
+                GameSession.notebook.pin(note_ids[_notebook_page % note_ids.size()])
+                GameSession.save_to_disk()
+        _update_notebook_display()
     if Input.is_action_just_pressed("quick_save"):
         _write_save()
     var hour: int = int(GameSession.day_minutes / 60.0)
     var minute: int = int(GameSession.day_minutes) % 60
-    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | Tab condition | F6 save\n" % [hour, minute]
+    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | N notebook | Tab condition | F6 save\n" % [hour, minute]
     _hud.text += "Little Nest" if GameSession.current_level == "shelter" else "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
     _hud.text += "\nScrap %d  |  Wire %d  |  Relay fuse %d" % [
         GameSession.bag.quantity(&"scrap"),
@@ -160,6 +173,19 @@ func _build_hud() -> void:
     _subtitle.visible = false
     overlay.add_child(_subtitle)
 
+    _notebook_display = Label.new()
+    _notebook_display.name = "PersonalNotebook"
+    _notebook_display.position = Vector2(380, 82)
+    _notebook_display.size = Vector2(575, 410)
+    _notebook_display.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _notebook_display.add_theme_font_size_override("font_size", 19)
+    _notebook_display.add_theme_color_override("font_color", Color("#f7ddaf"))
+    _notebook_display.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
+    _notebook_display.add_theme_constant_override("shadow_offset_x", 2)
+    _notebook_display.add_theme_constant_override("shadow_offset_y", 2)
+    _notebook_display.visible = false
+    overlay.add_child(_notebook_display)
+
     # Genuine save control; browser keys such as F5 may trigger a page reload.
     _save_button = Button.new()
     _save_button.name = "SaveButton"
@@ -170,6 +196,27 @@ func _build_hud() -> void:
     _save_button.position = Vector2(get_viewport_rect().size.x - 128.0, 15.0)
     _save_button.pressed.connect(_write_save)
     overlay.add_child(_save_button)
+
+
+func _update_notebook_display() -> void:
+    var notes: Array[String] = GameSession.notebook.observed_ids()
+    if notes.is_empty():
+        _notebook_display.text = "YUNA'S NOTEBOOK\n\nNothing written yet. Look closely at the world.\n\nN close"
+        return
+    _notebook_page = posmod(_notebook_page, notes.size())
+    var id: String = notes[_notebook_page]
+    var found: DiscoveryDefinition = GameSession.notebook.definition(id)
+    _notebook_display.text = "YUNA'S NOTEBOOK    %d/%d\n%s%s\n\n" % [
+        _notebook_page + 1, notes.size(), found.title,
+        "  [Pinned]" if GameSession.notebook.pinned == id else ""
+    ]
+    _notebook_display.text += "What I saw:\n%s\n\nMaybe:\n%s\n\nCould try:\n%s\n\n" % [
+        found.observation, found.hypothesis, found.personal_plan
+    ]
+    var idea: String = GameSession.notebook.inference()
+    if not idea.is_empty():
+        _notebook_display.text += "Thinking about both findings:\n%s\n\n" % idea
+    _notebook_display.text += "J next  |  P pin/unpin  |  N close"
 
 
 func _write_save() -> void:
