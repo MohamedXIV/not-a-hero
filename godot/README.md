@@ -65,3 +65,11 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - Spoken text appears in a bottom subtitle with no audio/TTS dependency. **V** toggles incidental remarks while urgent warning events remain eligible. **B** toggles the subtitle display; critical gameplay feedback still appears in the existing HUD. Settings persist in the versioned save v7.
 - Ordinary brief shoulder/strap tics continue whether she is calm or distressed. They are purely visual, not tied to stress, stealth detection, AI hearing or a random scream. Further art/animation variety is planned later.
 - Added pure scheduler and real-scene tests for subtitle visibility, workbench speech, priority/cooldown, settings restore and calm/distressed tic independence.
+
+## P2d — Actual Little Nest furniture arrangement
+
+- New-game bag holds one **Patchwork Rug** and one **Little Warm Lantern**. In the starter shelter, **G** enters/exits decor mode, **1** selects rug, **2** lantern, **left click** places at a snapped 16-unit grid position, and **X** retrieves the piece beneath the pointer.
+- Placement previews use green/red outlines. It is impossible to block the bed, kitchen, workbench, storage, water station, hatch or clear exit path, or overlap existing furnishings. Invalid placement never consumes an item.
+- Rug is floor decor; lantern has a true Godot PointLight2D and a physical collider, both rebuilt from the authoritative placements when reloading the shelter.
+- Pickup returns the exact piece to the inventory only when space permits. Placements persist in validated save schema v8, with exact coordinates and invalid-save rejection.
+- Assets are provisional color blocks; the approved art style still needs human review. Further crafted furnishings/comfort uses may be added in P2 later.
