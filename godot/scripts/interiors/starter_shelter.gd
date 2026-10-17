@@ -13,6 +13,7 @@ const WATER_POINT: Vector2 = Vector2(290, 151)
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var workbench: Node2D = $Workbench
 @onready var chest: Node2D = $StorageChest
+@onready var decorator: Node2D = $ShelterDecorator
 
 
 func _ready() -> void:
@@ -62,6 +63,8 @@ func _add_furniture_collision(footprint: Rect2) -> void:
 
 
 func get_interaction_hint() -> String:
+    if decorator.edit_mode:
+        return str(decorator.call("hint"))
     if yuna.position.distance_to(EXIT_POSITION) < 62.0:
         return "E — Leave Little Nest"
     if yuna.position.distance_to(BED_USE_POINT) < 62.0:
@@ -74,7 +77,7 @@ func get_interaction_hint() -> String:
         return str(chest.call("get_interaction_label"))
     if yuna.position.distance_to(workbench.position) < 92.0:
         return str(workbench.call("get_interaction_label"))
-    return ""
+    return str(decorator.call("hint"))
 
 
 func _physics_process(_delta: float) -> void:
@@ -83,7 +86,7 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
     GameSession.shelter_position = yuna.position
-    if Input.is_action_just_pressed("interact"):
+    if Input.is_action_just_pressed("interact") and not decorator.edit_mode:
         _interact_nearby()
 
 

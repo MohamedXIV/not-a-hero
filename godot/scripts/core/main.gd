@@ -19,7 +19,7 @@ func _ready() -> void:
     if not had_save:
         # New worlds vary in salvage population, but authored terrain stays fixed.
         GameSession.world_seed = randi()
-        GameSession.bag.try_receive({"dressing": 2})
+        GameSession.bag.try_receive({"dressing": 2, "rug": 1, "lantern": 1})
     _build_hud()
     _open_level(GameSession.current_level)
     if had_save:
@@ -53,6 +53,10 @@ func _process(delta: float) -> void:
     _hud.text += "\nBag %d/24 | Storage %d/120" % [
         GameSession.bag.total_units(), GameSession.storage.total_units()
     ]
+    if GameSession.current_level == "shelter":
+        _hud.text += "\nFurnishings: rug %d | lantern %d | G arrange" % [
+            GameSession.bag.quantity(&"rug"), GameSession.bag.quantity(&"lantern")
+        ]
     if GameSession.current_level == "outdoors":
         var selected: String = str(GameSession.combat_state.get("selected", "pistol"))
         var ammo: Dictionary = GameSession.combat_state.get(selected, {})

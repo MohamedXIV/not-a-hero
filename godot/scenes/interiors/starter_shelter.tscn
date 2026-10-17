@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/interiors/starter_shelter.gd" id="1_shelter"]
 [ext_resource type="PackedScene" path="res://scenes/actors/yuna.tscn" id="2_yuna"]
@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/interiors/workbench.tscn" id="3_workbench"]
 
 [ext_resource type="PackedScene" path="res://scenes/interiors/storage_chest.tscn" id="4_chest"]
+
+[ext_resource type="PackedScene" path="res://scenes/interiors/shelter_decorator.tscn" id="5_decor"]
 
 [node name="StarterShelter" type="Node2D"]
 script = ExtResource("1_shelter")
@@ -20,3 +22,5 @@ position = Vector2(498, 270)
 
 [node name="StorageChest" parent="." instance=ExtResource("4_chest")]
 position = Vector2(348, 180)
+
+[node name="ShelterDecorator" parent="." instance=ExtResource("5_decor")]
