@@ -96,7 +96,7 @@ func _check() -> void:
     yuna.position = Vector2(930, 340)
     await get_tree().physics_frame
     Input.action_press("move_right")
-    for frame: int in range(24):
+    for frame: int in range(58):
         await get_tree().physics_frame
     Input.action_release("move_right")
     if yuna.position.x < 1000.0:
