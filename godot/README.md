@@ -91,3 +91,11 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - Authored local remarks use the existing YunaVoice cooldown system. No LLM, network call or HUD quest arrow.
 - Validated v10 saves persist discovered IDs, order and selected pin. Malformed/unknown discoveries are rejected with no partial load. Geometry and clue locations remain fixed.
 - This is the **first P3 slice**, not the complete four-region world, advanced machine ecology, full notebook editing or the hidden mesa clue chain.
+
+## P3b — four continuous authored machine regions
+
+- The contiguous 640-unit exterior grid is now **Ash Flats → Cable Forest → Dead Foundry → Coolant Basin**. The formerly named Relay Waste chunk retains its stable scene/node/world identity for existing saved machine/cache state, but has a distinct Dead Foundry regional landscape of autonomous presses and conveyance machinery. The fourth Coolant Basin has fixed channels, siphons, cold light and powered pumps. The camera/physical boundary extends through world X=2560 without any region loading screen.
+- The Coolant Basin has a region-specific deterministic loot table (recovered filter/capacitor/alloy), a fixed filter cache that stays depleted once taken, and a distinct harmless Coolant Servitor following an authored maintenance path. Geometry and clues are authored, not randomized.
+- Both the Foundry press and basin siphon support **E to examine**. Each contributes a genuine observation, tentative hypothesis and personal plan to the existing notebook in any order. A connection between their timing pulses is inferred only after witnessing both; it is not a revealed quest marker or knowledge of the hidden mesa.
+- Godot scene smoke verifies all four chunk resources, Foundry/Coolant player transition, actual inspection, nonhostile servitor, loot persistence, streaming unload/reload and Notebook snapshot. Earlier P0–P3a regressions remain in the suite.
+- Visual geometry and robot animation are *provisional*; broader ecology, environmental events, multiple mesa access routes and full 1–3h balancing remain future work.

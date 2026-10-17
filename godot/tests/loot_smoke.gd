@@ -4,6 +4,7 @@ extends SceneTree
 const ASH: LootTableDefinition = preload("res://resources/world/loot/ash_table.tres")
 const CABLE: LootTableDefinition = preload("res://resources/world/loot/cable_table.tres")
 const RELAY: LootTableDefinition = preload("res://resources/world/loot/relay_table.tres")
+const COOLANT: LootTableDefinition = preload("res://resources/world/loot/coolant_table.tres")
 
 
 func _initialize() -> void:
@@ -22,6 +23,11 @@ func _check() -> void:
         assert(item_id in ["wire", "capacitor", "scrap"], "Cable table item mismatch")
     for item_id: Variant in RELAY.roll(1573, &"world/relay_waste/alloy_cache_01").keys():
         assert(item_id in ["alloy", "scrap"], "Relay table item mismatch")
+    var basin_id: StringName = &"world/coolant_basin/filter_cache_01"
+    var basin_loot: Dictionary = COOLANT.roll(1573, basin_id)
+    assert(basin_loot == COOLANT.roll(1573, basin_id), "Coolant salvage must be seed-stable")
+    for item_id: Variant in basin_loot.keys():
+        assert(item_id in ["coolant_filter", "capacitor", "alloy"], "Coolant biome items mismatch")
     var outcomes: Dictionary = {}
     for seed: int in range(120):
         var result: Dictionary = ASH.roll(seed, key)
