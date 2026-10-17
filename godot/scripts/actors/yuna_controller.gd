@@ -10,6 +10,13 @@ var _walking: bool = false
 var _stagger_left: float = 0.0
 var hits_taken: int = 0
 
+# Natural tic: a brief small shoulder/strap readjustment at steady intervals.
+# Neither frequency nor visibility depends on stress, stealth or being watched.
+const ORDINARY_TIC_PERIOD: float = 23.0
+var _tic_clock: float = 0.0
+var _tic_visible_for: float = 0.0
+var ordinary_tic_count: int = 0
+
 
 func _ready() -> void:
     add_to_group("yuna_actor")
@@ -21,6 +28,7 @@ func receive_robot_hit() -> void:
     hits_taken += 1
     _stagger_left = 0.65
     GameSession.condition.receive_impact(&"leg")
+    GameSession.speak(&"injured")
     GameSession.report("Ow! Move, Yuna. Find cover!")
 
 
@@ -29,6 +37,7 @@ func is_staggered() -> bool:
 
 
 func _physics_process(delta: float) -> void:
+    _advance_ordinary_tic(delta)
     _stagger_left = maxf(0.0, _stagger_left - delta)
     var direction: Vector2 = Input.get_vector(
         "move_left", "move_right", "move_up", "move_down"
@@ -49,6 +58,15 @@ func _physics_process(delta: float) -> void:
     queue_redraw()
 
 
+func _advance_ordinary_tic(delta: float) -> void:
+    _tic_clock += maxf(delta, 0.0)
+    _tic_visible_for = maxf(0.0, _tic_visible_for - delta)
+    if _tic_clock >= ORDINARY_TIC_PERIOD:
+        _tic_clock = fposmod(_tic_clock, ORDINARY_TIC_PERIOD)
+        _tic_visible_for = 0.18
+        ordinary_tic_count += 1
+
+
 func _draw() -> void:
     var step_offset: float = sin(Time.get_ticks_msec() * 0.014) * 2.0 if _walking else 0.0
     # Feet/shadow, boots, soft tunic, pale face, auburn hair and braid.
@@ -67,6 +85,9 @@ func _draw() -> void:
     draw_line(Vector2(braid_x * 0.6, -52), Vector2(braid_x, -24), Color("#92583f"), 7.0)
     draw_circle(Vector2(-4, -49), 1.6, Color("#7a9d85"))
     draw_circle(Vector2(5, -49), 1.6, Color("#7a9d85"))
+    if _tic_visible_for > 0.0:
+        # No sound or AI event: normal tic movement is not a stealth penalty.
+        draw_line(Vector2(15, -31), Vector2(25, -25), Color("#d5b49c"), 4.0)
 
 
 func draw_ellipse_shadow() -> void:

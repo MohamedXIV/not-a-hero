@@ -33,6 +33,7 @@ func interact() -> bool:
         return false
     looted = true
     GameSession.set_world_flag(persistent_id, true)
+    GameSession.speak(&"salvage_found")
     GameSession.report("A few useful parts. Good eyes, Yuna.")
     queue_redraw()
     return true
