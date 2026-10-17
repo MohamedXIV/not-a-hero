@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
 [ext_resource type="PackedScene" path="res://scenes/actors/robots/coolant_servitor.tscn" id="2_servitor"]
@@ -10,6 +10,9 @@
 [ext_resource type="PackedScene" path="res://scenes/world/machine_event_site.tscn" id="7_site"]
 
 [ext_resource type="Resource" path="res://resources/discoveries/basin_return_manifold.tres" id="8_lead"]
+
+[ext_resource type="PackedScene" path="res://scenes/world/mesa_entrance.tscn" id="9_mesa"]
+[ext_resource type="PackedScene" path="res://scenes/actors/robots/coolant_servitor.tscn" id="10_prybot"]
 
 [node name="CoolantBasinChunk" type="Node2D"]
 script = ExtResource("1_chunk")
@@ -36,3 +39,11 @@ worker_scene = ExtResource("2_servitor")
 position = Vector2(556, 270)
 discovery = ExtResource("8_lead")
 visual_style = 2
+
+[node name="MesaEntrance" parent="." instance=ExtResource("9_mesa")]
+position = Vector2(500, 172)
+
+[node name="MesaPryServitor" parent="." instance=ExtResource("10_prybot")]
+position = Vector2(366, 141)
+travel_distance = 28.0
+travel_speed = 13.0

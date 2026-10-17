@@ -3,6 +3,7 @@ extends Node2D
 
 const OUTDOORS: PackedScene = preload("res://scenes/world/outdoors.tscn")
 const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_shelter.tscn")
+const MESA_REFUGE: PackedScene = preload("res://scenes/interiors/mesa_refuge.tscn")
 
 var _level: Node2D
 var _hud: Label
@@ -57,7 +58,12 @@ func _process(delta: float) -> void:
     var hour: int = int(GameSession.day_minutes / 60.0)
     var minute: int = int(GameSession.day_minutes) % 60
     _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | N notebook | Tab condition | F6 save\n" % [hour, minute]
-    _hud.text += "Little Nest" if GameSession.current_level == "shelter" else "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
+    if GameSession.current_level == "shelter":
+        _hud.text += "Little Nest"
+    elif GameSession.current_level == "mesa":
+        _hud.text += "Mesa Refuge — " + ("first sector safe" if GameSession.mesa.first_sector_safe else "first sector unpowered")
+    else:
+        _hud.text += "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
     _hud.text += "\nScrap %d  |  Wire %d  |  Relay fuse %d" % [
         GameSession.bag.quantity(&"scrap"),
         GameSession.bag.quantity(&"wire"),
@@ -124,7 +130,11 @@ func _open_level(level_id: String) -> void:
         remove_child(_level)
         _level.queue_free()
     GameSession.current_level = level_id
-    var template: PackedScene = OUTDOORS if level_id == "outdoors" else STARTER_SHELTER
+    var template: PackedScene = OUTDOORS
+    if level_id == "shelter":
+        template = STARTER_SHELTER
+    elif level_id == "mesa":
+        template = MESA_REFUGE
     _level = template.instantiate() as Node2D
     add_child(_level)
     _level.connect("transition_requested", Callable(self, "_on_transition"))
@@ -138,6 +148,8 @@ func _on_transition(target: String) -> void:
     _open_level(target)
     if target == "shelter":
         GameSession.speak(&"home_return")
+    elif target == "mesa":
+        GameSession.speak(&"mesa_first_look")
     GameSession.save_to_disk()
 
 

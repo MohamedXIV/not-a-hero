@@ -17,6 +17,7 @@ static func install_defaults() -> void:
     _ensure_key(&"decorate", KEY_G)
     _ensure_key(&"decor_pickup", KEY_X)
     _ensure_key(&"craft_dressing", KEY_C)
+    _ensure_key(&"mesa_repair", KEY_Q)
     _ensure_key(&"open_notebook", KEY_N)
     _ensure_key(&"next_notebook", KEY_J)
     _ensure_key(&"pin_notebook", KEY_P)

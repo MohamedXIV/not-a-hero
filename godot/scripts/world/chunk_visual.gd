@@ -70,6 +70,15 @@ func _draw() -> void:
             draw_rect(Rect2(x, 325, 28, 18), Color("#987956"))
     else:
         # Coolant Basin: siphons and fluid channels for autonomous machinery.
+        # The shelf is solid authored visual geography, not a quest arrow.
+        draw_colored_polygon(PackedVector2Array([
+            Vector2(394, 0), Vector2(640, 0), Vector2(640, 242),
+            Vector2(603, 222), Vector2(584, 282), Vector2(435, 271),
+            Vector2(399, 199)
+        ]), Color("#394349"))
+        draw_line(Vector2(423, 221), Vector2(612, 240), Color("#717069"), 13.0)
+        draw_line(Vector2(397, 52), Vector2(560, 91), Color("#757a72"), 10.0)
+        draw_line(Vector2(410, 227), Vector2(469, 244), Color("#a08068"), 5.0)
         draw_rect(Rect2(52, 68, 520, 62), Color("#295962"))
         for x: int in [98, 316, 540]:
             draw_line(Vector2(x, 86), Vector2(x, 568), Color("#366f78"), 15.0)

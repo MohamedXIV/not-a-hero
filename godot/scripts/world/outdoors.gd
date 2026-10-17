@@ -31,6 +31,8 @@ func _process(_delta: float) -> void:
     _apply_daylight()
     if Input.is_action_just_pressed("interact"):
         _try_interaction()
+    if Input.is_action_just_pressed("mesa_repair"):
+        _try_mesa_fuse()
 
 
 func get_interaction_hint() -> String:
@@ -50,8 +52,20 @@ func _try_interaction() -> void:
         return
     for node: Node in get_tree().get_nodes_in_group("world_interactables"):
         if node is Node2D and yuna.global_position.distance_to((node as Node2D).global_position) < 74.0:
+            if node.has_method("can_enter") and bool(node.call("can_enter")):
+                transition_requested.emit("mesa")
+                return
             node.call("interact")
             GameSession.save_to_disk()
+            return
+
+
+func _try_mesa_fuse() -> void:
+    for node: Node in get_tree().get_nodes_in_group("world_interactables"):
+        if (node is Node2D and node.has_method("install_fuse")
+                and yuna.global_position.distance_to((node as Node2D).global_position) < 74.0):
+            if bool(node.call("install_fuse")):
+                GameSession.save_to_disk()
             return
 
 

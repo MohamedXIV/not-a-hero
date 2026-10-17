@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/mesa/mesa_refuge.gd" id="1_refuge"]
+[ext_resource type="PackedScene" path="res://scenes/actors/yuna.tscn" id="2_yuna"]
+
+[node name="MesaRefuge" type="Node2D"]
+script = ExtResource("1_refuge")
+
+[node name="Ambient" type="CanvasModulate" parent="."]
+color = Color(0.3, 0.36, 0.42, 1)
+
+[node name="Yuna" parent="." instance=ExtResource("2_yuna")]
