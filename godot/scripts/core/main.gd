@@ -183,10 +183,10 @@ func _build_hud() -> void:
     _controls_display.add_theme_color_override("font_shadow_color", Color("#151d22"))
     _controls_display.add_theme_constant_override("shadow_offset_x", 2)
     _controls_display.add_theme_constant_override("shadow_offset_y", 2)
-    _controls_display.text = ("WASD  Walk     Shift  Sprint     E  Interact\\n"
-            + "Q  Optional machine part     G  Arrange     X  Pick up\\n"
-            + "1 / 2  Weapons     Click  Fire     R  Reload     F  First aid\\n"
-            + "Tab  Condition     N  Notebook     J  Next     P  Pin\\n"
+    _controls_display.text = ("WASD  Walk     Shift  Sprint     E  Interact\n"
+            + "Q  Optional machine part     G  Arrange     X  Pick up\n"
+            + "1 / 2  Weapons     Click  Fire     R  Reload     F  First aid\n"
+            + "Tab  Condition     N  Notebook     J  Next     P  Pin\n"
             + "F6  Save     V  Voice     B  Subtitles     H  Close")
     _controls_display.visible = false
     overlay.add_child(_controls_display)
