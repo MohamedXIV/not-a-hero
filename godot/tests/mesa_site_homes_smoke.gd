@@ -4,12 +4,20 @@ extends Node
 
 const TEST_SAVE: String = "user://nah_p4a_site_homes_test.json"
 
+var _had_player_save: bool = false
+var _original_player_bytes: PackedByteArray
+
 
 func _ready() -> void:
     call_deferred("_check")
 
 
 func _check() -> void:
+    # Actual interactions autosave to GameSession.SAVE_PATH. Preserve any
+    # existing local save so the test is safe to run outside ephemeral CI.
+    _had_player_save = FileAccess.file_exists(GameSession.SAVE_PATH)
+    if _had_player_save:
+        _original_player_bytes = FileAccess.get_file_as_bytes(GameSession.SAVE_PATH)
     GameSession.current_level = "outdoors"
     GameSession.outdoor_position = Vector2(160, 330)
     GameSession.mesa = MesaState.new()
@@ -52,6 +60,24 @@ func _check() -> void:
         return
     if not str(hatch.call("get_interaction_label")).contains("Enter"):
         _fail("Opened entrance didn't advertise where to go")
+        return
+
+    # Same actual physical hatch must also accept the slower material-free
+    # handwheel path; no Notebook lead or combat prerequisite.
+    var fuse_snapshot: Dictionary = GameSession.mesa.snapshot()
+    GameSession.mesa = MesaState.new()
+    if not bool(hatch.call("interact")):
+        _fail("Real door could not be inspected for manual access")
+        return
+    for stage: int in range(MesaState.MANUAL_STAGES):
+        if not bool(hatch.call("interact")):
+            _fail("Real handwheel refused stage %d" % stage)
+            return
+    if not GameSession.mesa.is_open() or GameSession.mesa.access_method != "manual":
+        _fail("The physical handwheel did not open the door")
+        return
+    if not GameSession.mesa.restore_snapshot(fuse_snapshot):
+        _fail("Couldn't reset door to retained fuse-route state for save test")
         return
 
     GameSession.current_level = "mesa"
@@ -122,11 +148,22 @@ func _check() -> void:
         return
 
     DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
-    # Player's default save is never deleted or modified by this test.
+    _restore_player_save()
     print("PASS: physical mesa entrance, both entry mechanisms, room safety, reversible exit and two saved homes")
     get_tree().quit(0)
 
 
+func _restore_player_save() -> void:
+    if _had_player_save:
+        var out: FileAccess = FileAccess.open(GameSession.SAVE_PATH, FileAccess.WRITE)
+        if out != null:
+            out.store_buffer(_original_player_bytes)
+            out.close()
+    elif FileAccess.file_exists(GameSession.SAVE_PATH):
+        DirAccess.remove_absolute(ProjectSettings.globalize_path(GameSession.SAVE_PATH))
+
+
 func _fail(message: String) -> void:
+    _restore_player_save()
     push_error("Mesa site/homes smoke: " + message)
     get_tree().quit(1)
