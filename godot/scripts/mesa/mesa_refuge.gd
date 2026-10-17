@@ -1,6 +1,6 @@
 extends Node2D
 ## A partly habitable authored refuge. Utilities, growth and furniture are
-## tangible local interactions; deeper equipment chambers remain unfinished.
+## tangible local interactions; the service lift links a small lower gallery.
 signal transition_requested(destination: String)
 
 const LightFactory = preload("res://scripts/presentation/light_factory.gd")
@@ -19,6 +19,7 @@ const GROWING_BED: Vector2 = Vector2(513, 449)
 @onready var decorator: Node2D = $ShelterDecorator
 @onready var rear_nook: MesaRearNook = $RearNook
 @onready var carrier_panel: MesaCarrierPanel = $CarrierPanel
+@onready var depth_lift: MesaDepthLift = $DepthLift
 
 var _court_light: PointLight2D
 var _utility_light: PointLight2D
@@ -66,6 +67,7 @@ func _ready() -> void:
     _add_collision(Rect2(910, 498, 86, 45))
     _refresh_visuals()
     _last_court_ready = GameSession.mesa.court_ready
+    depth_lift.enter_requested.connect(_enter_depth)
     if not GameSession.mesa.first_sector_safe:
         GameSession.report("A whole place... but something's still running. Keep it safe, Yuna.")
 
@@ -129,6 +131,9 @@ func get_interaction_hint() -> String:
         return "E — Drink clean water" if GameSession.mesa.flow_online() else "Water tap: no clean flow yet."
     if yuna.position.distance_to(REST_BENCH) < 62.0:
         return "E — Rest on the recovered bench" if GameSession.mesa.power_online() else "Bench: too cold and dark to settle yet."
+    var depth_hint: String = depth_lift.hint_at(yuna.global_position)
+    if not depth_hint.is_empty():
+        return depth_hint
     var carrier_hint: String = carrier_panel.hint_at(yuna.global_position)
     if not carrier_hint.is_empty():
         return carrier_hint
@@ -139,6 +144,8 @@ func get_interaction_hint() -> String:
 
 
 func _interact_nearby() -> void:
+    if depth_lift.interact_at(yuna.global_position):
+        return
     if carrier_panel.interact_at(yuna.global_position):
         return
     if rear_nook.interact_at(yuna.position):
@@ -211,6 +218,11 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("It's still too cold and dark to stay here.")
+
+
+func _enter_depth() -> void:
+    GameSession.mesa_position = Vector2(1110, 264)
+    transition_requested.emit("mesa_depth")
 
 
 func _use_spare_part() -> void:
