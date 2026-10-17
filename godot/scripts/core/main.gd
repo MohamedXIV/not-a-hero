@@ -22,8 +22,8 @@ func _process(delta: float) -> void:
         GameSession.save_to_disk()
     var hour: int = int(GameSession.day_minutes / 60.0)
     var minute: int = int(GameSession.day_minutes) % 60
-    _hud.text = "NOT A HERO  |  %02d:%02d  |  WASD move  Shift sprint  E hatch  F5 save\n" % [hour, minute]
-    _hud.text += "Early P0 scene proof • " + ("Little Nest" if GameSession.current_level == "shelter" else "Continuous machine flats")
+    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | F5 save\n" % [hour, minute]
+    _hud.text += "Little Nest" if GameSession.current_level == "shelter" else "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
 
 
 func _open_level(level_id: String) -> void:
