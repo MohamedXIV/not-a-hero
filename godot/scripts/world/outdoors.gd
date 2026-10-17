@@ -38,11 +38,11 @@ func _process(_delta: float) -> void:
 func get_interaction_hint() -> String:
     if yuna.position.distance_to(HATCH_POSITION) < 55.0:
         return "E — Enter Little Nest"
-    for node: Node in get_tree().get_nodes_in_group("world_interactables"):
-        if node is Node2D and yuna.global_position.distance_to((node as Node2D).global_position) < 74.0:
-            if node.has_method("get_interaction_label"):
-                return str(node.call("get_interaction_label"))
-            return "E — Inspect machine"
+    var closest: Node2D = _nearest_interactable()
+    if closest != null:
+        if closest.has_method("get_interaction_label"):
+            return str(closest.call("get_interaction_label"))
+        return "E — Inspect machine"
     return ""
 
 
@@ -50,23 +50,45 @@ func _try_interaction() -> void:
     if yuna.position.distance_to(HATCH_POSITION) < 55.0:
         transition_requested.emit("shelter")
         return
-    for node: Node in get_tree().get_nodes_in_group("world_interactables"):
-        if node is Node2D and yuna.global_position.distance_to((node as Node2D).global_position) < 74.0:
-            if node.has_method("can_enter") and bool(node.call("can_enter")):
-                transition_requested.emit("mesa")
-                return
-            node.call("interact")
-            GameSession.save_to_disk()
-            return
+    var closest: Node2D = _nearest_interactable()
+    if closest == null:
+        return
+    if closest.has_method("can_enter") and bool(closest.call("can_enter")):
+        transition_requested.emit("mesa")
+        return
+    closest.call("interact")
+    GameSession.save_to_disk()
 
 
 func _try_mesa_fuse() -> void:
+    var closest: Node2D = _nearest_interactable(true)
+    if closest != null and bool(closest.call("install_fuse")):
+        GameSession.save_to_disk()
+
+
+func _nearest_interactable(require_fuse: bool = false) -> Node2D:
+    # One choice for the prompt and the actual E action. Overlapping
+    # observations, salvage and the Mesa hatch must never pick the arbitrary
+    # first node in the streamed group (which varies with chunk lifetime).
+    var chosen: Node2D = null
+    var smallest: float = 74.0
+    var stable_path: String = ""
     for node: Node in get_tree().get_nodes_in_group("world_interactables"):
-        if (node is Node2D and node.has_method("install_fuse")
-                and yuna.global_position.distance_to((node as Node2D).global_position) < 74.0):
-            if bool(node.call("install_fuse")):
-                GameSession.save_to_disk()
-            return
+        if not (node is Node2D) or not node.is_inside_tree():
+            continue
+        if require_fuse and not node.has_method("install_fuse"):
+            continue
+        if not require_fuse and not node.has_method("interact"):
+            continue
+        var candidate: Node2D = node as Node2D
+        var distance: float = yuna.global_position.distance_to(candidate.global_position)
+        var path: String = str(candidate.get_path())
+        if distance < smallest or (is_equal_approx(distance, smallest) and
+                (stable_path.is_empty() or path < stable_path)):
+            chosen = candidate
+            smallest = distance
+            stable_path = path
+    return chosen
 
 
 func _draw() -> void:
