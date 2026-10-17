@@ -11,6 +11,7 @@ var nourishment: float = 82.0
 var hydration: float = 85.0
 var composure: float = 78.0
 var injuries: Dictionary = {"arm": 0, "leg": 0, "torso": 0}
+var bandaged: Dictionary = {"arm": false, "leg": false, "torso": false}
 
 
 func tick(delta: float, at_home: bool, moving: bool, sprinting: bool) -> void:
@@ -39,8 +40,38 @@ func receive_impact(part: StringName = &"leg") -> bool:
     if key not in PARTS:
         return false
     injuries[key] = mini(3, int(injuries[key]) + 1)
+    bandaged[key] = false
     composure = maxf(0.0, composure - 11.0)
     stamina = maxf(0.0, stamina - 12.0)
+    return true
+
+
+func next_untreated_part() -> String:
+    for part: String in ["torso", "leg", "arm"]:
+        if int(injuries[part]) > 0 and not bool(bandaged[part]):
+            return part
+    return ""
+
+
+func apply_dressing(part: String) -> bool:
+    if part not in PARTS or int(injuries[part]) <= 0 or bool(bandaged[part]):
+        return false
+    bandaged[part] = true
+    return true
+
+
+func eat_meal() -> bool:
+    if nourishment >= 92.0:
+        return false
+    nourishment = minf(100.0, nourishment + 34.0)
+    composure = minf(100.0, composure + 3.0)
+    return true
+
+
+func drink_water() -> bool:
+    if hydration >= 92.0:
+        return false
+    hydration = minf(100.0, hydration + 44.0)
     return true
 
 
@@ -67,7 +98,7 @@ func composure_label() -> String:
 
 func movement_modifier() -> float:
     # Capped compound penalty: an injured/tired/thirsty Yuna can still reach home.
-    var leg_penalty: float = 0.09 * float(injuries["leg"])
+    var leg_penalty: float = 0.09 * float(injuries["leg"]) * (0.65 if bool(bandaged["leg"]) else 1.0)
     var fatigue_penalty: float = 0.12 if fatigue > 75.0 else 0.0
     var thirst_penalty: float = 0.07 if hydration < 18.0 else 0.0
     return clampf(1.0 - leg_penalty - fatigue_penalty - thirst_penalty, 0.62, 1.0)
@@ -79,7 +110,7 @@ func aim_sway_pixels() -> float:
 
 
 func reload_modifier() -> float:
-    return clampf(1.0 + float(injuries["arm"]) * 0.12 + (0.1 if fatigue > 75.0 else 0.0), 1.0, 1.5)
+    return clampf(1.0 + float(injuries["arm"]) * (0.08 if bool(bandaged["arm"]) else 0.12) + (0.1 if fatigue > 75.0 else 0.0), 1.0, 1.5)
 
 
 func injury_description() -> String:
@@ -89,7 +120,7 @@ func injury_description() -> String:
         if severity == 0:
             continue
         var qualifier: String = "Bruised" if severity == 1 else ("Strained" if severity == 2 else "Seriously injured")
-        names.append("%s %s" % [qualifier, part])
+        names.append("%s %s%s" % [qualifier, part, " (dressed)" if bool(bandaged[part]) else ""])
     return "Uninjured" if names.is_empty() else ", ".join(names)
 
 
@@ -102,6 +133,8 @@ func rest_at_home() -> void:
     nourishment = maxf(0.0, nourishment - 5.0)
     for part: String in PARTS:
         injuries[part] = maxi(0, int(injuries[part]) - 1)
+        if int(injuries[part]) == 0:
+            bandaged[part] = false
 
 
 func snapshot() -> Dictionary:
@@ -112,6 +145,7 @@ func snapshot() -> Dictionary:
         "hydration": hydration,
         "composure": composure,
         "injuries": injuries.duplicate(true),
+        "bandaged": bandaged.duplicate(true),
     }
 
 
@@ -139,10 +173,22 @@ func restore_snapshot(raw: Dictionary) -> bool:
         if int(severity) < 0 or int(severity) > 3:
             return false
         restored_wounds[part] = int(severity)
+    var care: Variant = raw.get("bandaged")
+    if typeof(care) != TYPE_DICTIONARY:
+        return false
+    var restored_care: Dictionary = {}
+    for part: String in PARTS:
+        var status: Variant = care.get(part)
+        if typeof(status) != TYPE_BOOL:
+            return false
+        if bool(status) and int(restored_wounds[part]) == 0:
+            return false
+        restored_care[part] = status
     stamina = normalized["stamina"]
     fatigue = normalized["fatigue"]
     nourishment = normalized["nourishment"]
     hydration = normalized["hydration"]
     composure = normalized["composure"]
     injuries = restored_wounds
+    bandaged = restored_care
     return true

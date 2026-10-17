@@ -33,6 +33,17 @@ func _check() -> void:
     invalid["injuries"]["arm"] = 2.5
     assert(not restored.restore_snapshot(invalid), "Fractional injuries rejected")
     assert(restored.snapshot() == before_invalid, "Rejected snapshot cannot mutate condition")
+    restored.injuries["arm"] = 2
+    assert(restored.apply_dressing("arm"), "Valid first aid stabilizes arm")
+    assert(not restored.apply_dressing("arm"), "Cannot double-dress same injury")
+    assert(restored.bandaged["arm"], "First aid state retained")
+    var dressed: Dictionary = restored.snapshot()
+    var from_disk := YunaCondition.new()
+    assert(from_disk.restore_snapshot(JSON.parse_string(JSON.stringify(dressed))), "Dressing status survives JSON")
+    assert(from_disk.bandaged["arm"], "Arm dressing actually restored")
+    var bad_care: Dictionary = dressed.duplicate(true)
+    bad_care["bandaged"]["leg"] = "maybe"
+    assert(not from_disk.restore_snapshot(bad_care), "Malformed care state rejected")
     restored.rest_at_home()
     assert(restored.can_focus(), "The familiar bed restores enough calm to work")
     assert(int(restored.injuries["leg"]) == 2, "Rest heals gradually, never instantly")

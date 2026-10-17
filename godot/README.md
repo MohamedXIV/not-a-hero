@@ -51,3 +51,9 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - **Tab** opens condition details. During ordinary play, only pertinent fatigue/injury/stress cues appear, not six permanent bars.
 - Ordinary motor/vocal tics remain independent of fear and stealth. No random panic scream is implemented.
 - First aid, actual drinking/cooking, contextual bark selection and shelter decoration are later P2 slices, not falsely claimed by P2a.
+
+## P2b — first aid & finite home supplies
+
+- A new run starts with two `Field Dressing` items. **F** applies one to an untreated injured body part (prioritizing torso, then leg, then arm). Treatment consumes exactly one dressing, marks the wound dressed and eases its penalty; it does **not** instantly erase injuries. Sleeping gradually heals injuries and can clear the dressing once healed.
+- The Little Nest has a cooker station (walk close, **E** to eat) and a water vessel (**E** to drink). Starting supplies are **four meals and six waters**, consumed only if needed. No endless refills or required daily sortie yet; later shelter systems can provide replenishment.
+- Food/water and bandaging status are validated and saved with the condition. No HP bar, arbitrary panic, or cloud inference.

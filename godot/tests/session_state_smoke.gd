@@ -20,17 +20,20 @@ func _check() -> void:
     var vitals: YunaCondition = session.get("condition") as YunaCondition
     vitals.receive_impact(&"leg")
     vitals.apply_pressure(13.0)
+    session.set("home_supplies", {"meals": 3, "water": 5})
     var snapshot: Dictionary = session.call("snapshot")
     _assert_ok(snapshot.get("world_flags", {}).get("world/ash_flats/relay_01", false), "switch included in snapshot")
 
     session.call("set_world_flag", &"world/ash_flats/relay_01", false)
     session.set("current_level", "shelter")
     bag.try_spend(&"scrap", 3)
+    session.set("home_supplies", {"meals": 0, "water": 0})
     storage.try_spend(&"alloy", 4)
     vitals.rest_at_home()
     _assert_ok(session.call("restore_snapshot", snapshot), "valid snapshot accepted")
     _assert_ok(session.call("get_world_flag", &"world/ash_flats/relay_01"), "world switch restored")
     _assert_ok(session.get("current_level") == "outdoors", "current level restored")
+    _assert_ok(int((session.get("home_supplies") as Dictionary)["meals"]) == 3, "shelter food supplies restored")
     _assert_ok((session.get("bag") as InventoryState).quantity(&"scrap") == 3, "inventory restored")
     _assert_ok((session.get("storage") as InventoryState).quantity(&"alloy") == 4, "storage restored")
     _assert_ok(int((session.get("condition") as YunaCondition).injuries["leg"]) == 1, "localized injury restored")
@@ -51,6 +54,10 @@ func _check() -> void:
     invalid["condition"]["composure"] = -3.0
     _assert_ok(not session.call("restore_snapshot", invalid), "invalid composure rejected")
     _assert_ok(session.call("snapshot") == before, "invalid condition never partially mutates")
+    invalid = snapshot.duplicate(true)
+    invalid["home_supplies"] = {"meals": 2.5, "water": 3}
+    _assert_ok(not session.call("restore_snapshot", invalid), "fractional food rejected")
+    _assert_ok(session.call("snapshot") == before, "bad supplies must not mutate game")
     invalid = snapshot.duplicate(true)
     invalid["version"] = 999
     _assert_ok(not session.call("restore_snapshot", invalid), "incompatible version rejected")

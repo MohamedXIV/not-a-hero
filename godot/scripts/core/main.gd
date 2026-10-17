@@ -18,6 +18,7 @@ func _ready() -> void:
     if not had_save:
         # New worlds vary in salvage population, but authored terrain stays fixed.
         GameSession.world_seed = randi()
+        GameSession.bag.try_receive({"dressing": 2})
     _build_hud()
     _open_level(GameSession.current_level)
     if had_save:
@@ -26,6 +27,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
     GameSession.advance_time(delta)
+    if Input.is_action_just_pressed("field_dressing"):
+        if GameSession.use_field_dressing():
+            GameSession.save_to_disk()
     if Input.is_action_just_pressed("quick_save"):
         _write_save()
     var hour: int = int(GameSession.day_minutes / 60.0)
@@ -52,7 +56,7 @@ func _process(delta: float) -> void:
     if state.stamina < 48.0:
         _hud.text += "\nOut of breath — slow down"
     if state.injury_description() != "Uninjured":
-        _hud.text += "\n" + state.injury_description()
+        _hud.text += "\n" + state.injury_description() + " — F first aid"
     if state.hydration < 28.0 or state.nourishment < 24.0 or state.fatigue > 72.0:
         _hud.text += "\n" + ("Thirsty " if state.hydration < 28.0 else "") + ("Hungry " if state.nourishment < 24.0 else "") + ("Tired" if state.fatigue > 72.0 else "")
     if Input.is_action_just_pressed("status_panel"):
@@ -61,6 +65,11 @@ func _process(delta: float) -> void:
         _status_detail.text = "YUNA — CONDITION\nComposure: %s (%.0f)\nStamina: %.0f\nRest: %.0f/100 tired\nNourishment: %.0f\nHydration: %.0f\n%s\n\nTab closes" % [
             state.composure_label(), state.composure, state.stamina, state.fatigue,
             state.nourishment, state.hydration, state.injury_description()
+        ]
+        _status_detail.text += "\nDressings: %d  |  Meals: %d  |  Water: %d" % [
+            GameSession.bag.quantity(&"dressing"),
+            int(GameSession.home_supplies["meals"]),
+            int(GameSession.home_supplies["water"]),
         ]
     if GameSession.current_feedback() != "":
         _hud.text += "\n" + GameSession.current_feedback()
