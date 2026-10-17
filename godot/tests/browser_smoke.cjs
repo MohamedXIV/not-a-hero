@@ -130,7 +130,7 @@ function seededLowerGallery(fresh) {
   Object.assign(state, {
     current_level: 'mesa_depth',
     mesa_position: [1110, 264],
-    mesa_depth_position: [590, 224],
+    mesa_depth_position: [590, 344],
   });
   Object.assign(state.mesa, {
     inspected: true, manual_progress: 3, access_method: 'manual',
