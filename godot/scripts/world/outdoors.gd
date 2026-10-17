@@ -15,14 +15,14 @@ func _ready() -> void:
     var camera: Camera2D = yuna.get_node("Camera2D") as Camera2D
     camera.limit_left = 0
     camera.limit_top = 0
-    camera.limit_right = 1920
+    camera.limit_right = 2560
     camera.limit_bottom = 640
     _sync_chunks()
     queue_redraw()
 
 
 func _physics_process(_delta: float) -> void:
-    yuna.position = yuna.position.clamp(Vector2(30, 42), Vector2(1890, 590))
+    yuna.position = yuna.position.clamp(Vector2(30, 42), Vector2(2530, 590))
 
 
 func _process(_delta: float) -> void:

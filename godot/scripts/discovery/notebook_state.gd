@@ -7,6 +7,8 @@ extends RefCounted
 const DEFINITIONS: Dictionary = {
     "ash_warm_conduit": preload("res://resources/discoveries/ash_warm_conduit.tres"),
     "cable_scarred_junction": preload("res://resources/discoveries/cable_scarred_junction.tres"),
+    "foundry_shift_cycle": preload("res://resources/discoveries/foundry_shift_cycle.tres"),
+    "basin_reverse_flow": preload("res://resources/discoveries/basin_reverse_flow.tres"),
 }
 
 var _seen: Array[String] = []
@@ -41,9 +43,12 @@ func pin(id: String) -> bool:
 
 func inference() -> String:
     # This is a deduction from *both* physically observed facts, not new lore.
+    var possibilities: Array[String] = []
     if knows("ash_warm_conduit") and knows("cable_scarred_junction"):
-        return "Two different traces of an active cable route. They might connect."
-    return ""
+        possibilities.append("Two different traces of an active cable route. They might connect.")
+    if knows("foundry_shift_cycle") and knows("basin_reverse_flow"):
+        possibilities.append("The press and the siphon both pulse regularly. Could they share a timing signal?")
+    return "\n".join(possibilities)
 
 
 func snapshot() -> Dictionary:

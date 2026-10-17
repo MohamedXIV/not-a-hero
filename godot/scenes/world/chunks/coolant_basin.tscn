@@ -1,0 +1,24 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
+[ext_resource type="PackedScene" path="res://scenes/actors/robots/coolant_servitor.tscn" id="2_servitor"]
+[ext_resource type="PackedScene" path="res://scenes/world/salvage_cache.tscn" id="3_salvage"]
+[ext_resource type="Resource" path="res://resources/world/loot/coolant_table.tres" id="4_loot"]
+[ext_resource type="PackedScene" path="res://scenes/world/observation_marker.tscn" id="5_observation"]
+[ext_resource type="Resource" path="res://resources/discoveries/basin_reverse_flow.tres" id="6_discovery"]
+
+[node name="CoolantBasinChunk" type="Node2D"]
+script = ExtResource("1_chunk")
+style = 3
+
+[node name="CoolantServitor" parent="." instance=ExtResource("2_servitor")]
+position = Vector2(318, 228)
+
+[node name="FilterCache" parent="." instance=ExtResource("3_salvage")]
+position = Vector2(532, 504)
+persistent_id = &"world/coolant_basin/filter_cache_01"
+loot_table = ExtResource("4_loot")
+
+[node name="ReverseFlowSiphon" parent="." instance=ExtResource("5_observation")]
+position = Vector2(138, 426)
+discovery = ExtResource("6_discovery")

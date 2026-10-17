@@ -65,6 +65,16 @@ const BARKS: Dictionary = {
         "lines": ["Warm cable. Still powered. Where does it go, Yuna?",
                   "That's not dead wiring. Think, Yuna. Trace it."]
     },
+    "noticed_foundry": {
+        "priority": 49, "cooldown": 60.0,
+        "lines": ["An empty press still keeps time. Who's conducting, Yuna?",
+                  "No operators. And yet it cycles. Watch the rhythm, Yuna."]
+    },
+    "noticed_basin": {
+        "priority": 49, "cooldown": 60.0,
+        "lines": ["That's flowing uphill. Pipes don't do that alone, Yuna.",
+                  "Something's pulling on this pump. But what?"]
+    },
     "noticed_junction": {
         "priority": 49, "cooldown": 60.0,
         "lines": ["Someone erased those markings. Why, Yuna?",
