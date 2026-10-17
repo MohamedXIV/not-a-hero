@@ -18,6 +18,7 @@ const GROWING_BED: Vector2 = Vector2(513, 449)
 @onready var ambient: CanvasModulate = $Ambient
 @onready var decorator: Node2D = $ShelterDecorator
 @onready var rear_nook: MesaRearNook = $RearNook
+@onready var carrier_panel: MesaCarrierPanel = $CarrierPanel
 
 var _court_light: PointLight2D
 var _utility_light: PointLight2D
@@ -128,6 +129,9 @@ func get_interaction_hint() -> String:
         return "E — Drink clean water" if GameSession.mesa.flow_online() else "Water tap: no clean flow yet."
     if yuna.position.distance_to(REST_BENCH) < 62.0:
         return "E — Rest on the recovered bench" if GameSession.mesa.power_online() else "Bench: too cold and dark to settle yet."
+    var carrier_hint: String = carrier_panel.hint_at(yuna.global_position)
+    if not carrier_hint.is_empty():
+        return carrier_hint
     var nook_hint: String = rear_nook.hint_at(yuna.position)
     if not nook_hint.is_empty():
         return nook_hint
@@ -135,6 +139,8 @@ func get_interaction_hint() -> String:
 
 
 func _interact_nearby() -> void:
+    if carrier_panel.interact_at(yuna.global_position):
+        return
     if rear_nook.interact_at(yuna.position):
         return
     if yuna.position.distance_to(EXIT_POINT) < 68.0:
