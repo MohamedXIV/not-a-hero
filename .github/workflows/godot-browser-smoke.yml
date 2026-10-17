@@ -62,7 +62,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           node godot/tests/browser_smoke.cjs 2>&1 | tee /tmp/browser-v17.log
-          grep -q 'PASS: Chromium WebGL2 fresh v17 + lower v17 archive/heat + real scene return + IndexedDB persistent reload' /tmp/browser-v17.log
+          grep -q 'PASS: Chromium WebGL2 fresh v17 + lower v17 archive/heat + waypointed real E return + IndexedDB persistent reload' /tmp/browser-v17.log
           test -s /tmp/nah-depth-cold.png
           test -s /tmp/nah-depth-warm.png
           test -s /tmp/nah-depth-warm-reload.png
