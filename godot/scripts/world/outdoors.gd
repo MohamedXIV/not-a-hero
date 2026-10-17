@@ -61,12 +61,14 @@ func _try_interaction() -> void:
 
 
 func _try_mesa_fuse() -> void:
-    var closest: Node2D = _nearest_interactable(true)
-    if closest != null and bool(closest.call("install_fuse")):
+    # Q must target the same focused hatch as the visible E/Q prompt;
+    # standing nearer to a manifold must not secretly change the door.
+    var closest: Node2D = _nearest_interactable()
+    if closest != null and closest.has_method("install_fuse") and bool(closest.call("install_fuse")):
         GameSession.save_to_disk()
 
 
-func _nearest_interactable(require_fuse: bool = false) -> Node2D:
+func _nearest_interactable() -> Node2D:
     # One choice for the prompt and the actual E action. Overlapping
     # observations, salvage and the Mesa hatch must never pick the arbitrary
     # first node in the streamed group (which varies with chunk lifetime).
@@ -76,9 +78,7 @@ func _nearest_interactable(require_fuse: bool = false) -> Node2D:
     for node: Node in get_tree().get_nodes_in_group("world_interactables"):
         if not (node is Node2D) or not node.is_inside_tree():
             continue
-        if require_fuse and not node.has_method("install_fuse"):
-            continue
-        if not require_fuse and not node.has_method("interact"):
+        if not node.has_method("interact"):
             continue
         var candidate: Node2D = node as Node2D
         var distance: float = yuna.global_position.distance_to(candidate.global_position)
