@@ -7,6 +7,7 @@ const CHUNK_DEFINITIONS = [
     preload("res://resources/world/chunks/ash_flats.tres"),
     preload("res://resources/world/chunks/cable_edge.tres"),
     preload("res://resources/world/chunks/relay_waste.tres"),
+    preload("res://resources/world/chunks/coolant_basin.tres"),
 ]
 
 @export_range(0, 2) var neighboring_cells: int = 1

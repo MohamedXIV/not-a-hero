@@ -6,18 +6,27 @@ const LightFactory = preload("res://scripts/presentation/light_factory.gd")
 const WIDTH: float = 640.0
 const HEIGHT: float = 640.0
 
-@export_range(0, 2) var style: int = 0
+@export_range(0, 3) var style: int = 0
 
 const FIXED_OBSTACLES := {
     0: [Vector2(320, 205), Vector2(480, 415)],
     1: [Vector2(175, 180), Vector2(330, 410), Vector2(525, 265)],
     2: [Vector2(200, 420), Vector2(430, 210)],
+    3: [Vector2(220, 172), Vector2(472, 290)],
 }
 
 
 func _ready() -> void:
     for point: Vector2 in FIXED_OBSTACLES[style]:
         _make_obstacle(point)
+    if style == 3:
+        var fixture := PointLight2D.new()
+        fixture.position = Vector2(148, 355)
+        fixture.texture = LightFactory.radial_texture()
+        fixture.texture_scale = 3.0
+        fixture.energy = 0.6
+        fixture.color = Color("#8dc8d0")
+        add_child(fixture)
     if style == 1:
         var fixture := PointLight2D.new()
         fixture.position = Vector2(350, 280)
@@ -31,10 +40,10 @@ func _ready() -> void:
 
 func _draw() -> void:
     var grounds: Array[Color] = [
-        Color("#666b69"), Color("#4d5961"), Color("#62574c"),
+        Color("#666b69"), Color("#4d5961"), Color("#62574c"), Color("#47636a"),
     ]
     var accent: Array[Color] = [
-        Color("#8e8470"), Color("#476e72"), Color("#96704c"),
+        Color("#8e8470"), Color("#476e72"), Color("#96704c"), Color("#729ba6"),
     ]
     draw_rect(Rect2(Vector2.ZERO, Vector2(WIDTH, HEIGHT)), grounds[style])
     for ix: int in range(0, 11):
@@ -50,8 +59,22 @@ func _draw() -> void:
     elif style == 1:
         for x: int in [80, 460, 585]:
             draw_line(Vector2(x, 0), Vector2(x + 24, 640), Color("#24393d"), 12.0)
+    elif style == 2:
+        # The Dead Foundry: huge automated presses and cooling rails, not human roads.
+        draw_rect(Rect2(300, 54, 246, 63), Color("#433d38"))
+        for x: int in [325, 400, 475]:
+            draw_line(Vector2(x, 60), Vector2(x, 114), Color("#b7885c"), 8.0)
+            draw_circle(Vector2(x, 82), 9.0, Color("#603f34"))
+        draw_line(Vector2(0, 334), Vector2(640, 334), Color("#3c3633"), 15.0)
+        for x: int in range(24, 640, 65):
+            draw_rect(Rect2(x, 325, 28, 18), Color("#987956"))
     else:
-        draw_rect(Rect2(315, 50, 210, 62), Color("#46403a"))
+        # Coolant Basin: siphons and fluid channels for autonomous machinery.
+        draw_rect(Rect2(52, 68, 520, 62), Color("#295962"))
+        for x: int in [98, 316, 540]:
+            draw_line(Vector2(x, 86), Vector2(x, 568), Color("#366f78"), 15.0)
+            draw_line(Vector2(x + 12, 86), Vector2(x + 12, 568), Color("#85b3b7"), 4.0)
+        draw_arc(Vector2(146, 426), 46, PI, TAU, 18, Color("#88c4cb"), 8.0)
 
 
 func _make_obstacle(point: Vector2) -> void:
