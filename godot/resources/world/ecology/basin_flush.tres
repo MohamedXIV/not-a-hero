@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MachineEventDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/machine_event_definition.gd" id="1_event"]
+[ext_resource type="Resource" path="res://resources/items/coolant_filter.tres" id="2_material"]
+
+[resource]
+script = ExtResource("1_event")
+region_id = &"coolant_basin"
+display_name = "Coolant flush"
+salvage_item = ExtResource("2_material")
+salvage_amount = 1
+epoch_minutes = 360.0
+active_modulus = 3
+active_description = "A servicing unit is clearing an active filter bed."
+idle_description = "The filter bed is silent."
