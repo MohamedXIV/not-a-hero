@@ -85,6 +85,16 @@ const BARKS: Dictionary = {
         "lines": ["Sunlight... in here? Oh, Yuna. Look at this.",
                   "It's enormous. You can always go home, Yuna."]
     },
+    "mesa_power_restored": {
+        "priority": 64, "cooldown": 75.0,
+        "lines": ["The lights came on. Your hands did that, Yuna.",
+                  "A working bus. It's not home yet... but it could be."]
+    },
+    "mesa_flow_restored": {
+        "priority": 66, "cooldown": 75.0,
+        "lines": ["Listen. Water moving. The place is waking up, Yuna.",
+                  "The barrier lifted. You made it safe, Yuna."]
+    },
     "mesa_first_safe": {
         "priority": 70, "cooldown": 100.0,
         "lines": ["One safe room. Maybe the rest can wait, Yuna.",
