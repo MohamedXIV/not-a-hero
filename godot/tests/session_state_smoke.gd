@@ -29,6 +29,9 @@ func _check() -> void:
     var journal: NotebookState = session.get("notebook") as NotebookState
     _assert_ok(journal.discover("cable_scarred_junction"), "physically witnessed clue recorded")
     _assert_ok(journal.pin("cable_scarred_junction"), "player may pin a known note")
+    var clock: MachineEcology = session.get("ecology") as MachineEcology
+    clock.advance(725.0)
+    _assert_ok(clock.epoch("dead_foundry") == 2, "whole-world machine time advances")
     var snapshot: Dictionary = session.call("snapshot")
     _assert_ok(snapshot.get("world_flags", {}).get("world/ash_flats/relay_01", false), "switch included in snapshot")
 
@@ -39,6 +42,7 @@ func _check() -> void:
     storage.try_spend(&"alloy", 4)
     decorated.remove_at(0)
     produce.take_water()
+    clock.advance(360.0)
     journal = NotebookState.new()
     session.set("notebook", journal)
     vitals.rest_at_home()
@@ -50,6 +54,7 @@ func _check() -> void:
     _assert_ok((session.get("storage") as InventoryState).quantity(&"alloy") == 4, "storage restored")
     _assert_ok((session.get("decor") as ShelterDecorState).count_kind("rug") == 1, "furniture restored")
     _assert_ok((session.get("production") as HomeProduction).ready_water == 2, "shelter production restored")
+    _assert_ok((session.get("ecology") as MachineEcology).epoch("dead_foundry") == 2, "offscreen ecology clock restored")
     _assert_ok((session.get("notebook") as NotebookState).knows("cable_scarred_junction"), "observed clue restored")
     _assert_ok((session.get("notebook") as NotebookState).pinned == "cable_scarred_junction", "pinned note restored")
     _assert_ok(int((session.get("condition") as YunaCondition).injuries["leg"]) == 1, "localized injury restored")
@@ -86,6 +91,10 @@ func _check() -> void:
     invalid["notebook"]["observed"].append("unknown_invisible_secret")
     _assert_ok(not session.call("restore_snapshot", invalid), "unseen/unknown note rejected")
     _assert_ok(session.call("snapshot") == before, "invalid notebook cannot partially mutate game")
+    invalid = snapshot.duplicate(true)
+    invalid["ecology"]["claimed"]["dead_foundry"] = 999
+    _assert_ok(not session.call("restore_snapshot", invalid), "future machine shift claim rejected")
+    _assert_ok(session.call("snapshot") == before, "invalid ecology cannot mutate running save")
     invalid = snapshot.duplicate(true)
     invalid["version"] = 999
     _assert_ok(not session.call("restore_snapshot", invalid), "incompatible version rejected")

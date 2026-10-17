@@ -99,3 +99,11 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - Both the Foundry press and basin siphon support **E to examine**. Each contributes a genuine observation, tentative hypothesis and personal plan to the existing notebook in any order. A connection between their timing pulses is inferred only after witnessing both; it is not a revealed quest marker or knowledge of the hidden mesa.
 - Godot scene smoke verifies all four chunk resources, Foundry/Coolant player transition, actual inspection, nonhostile servitor, loot persistence, streaming unload/reload and Notebook snapshot. Earlier P0–P3a regressions remain in the suite.
 - Visual geometry and robot animation are *provisional*; broader ecology, environmental events, multiple mesa access routes and full 1–3h balancing remain future work.
+
+## P3c — a coarse living machine world, even when Yuna is away
+
+- `MachineEcology` stores a **monotonic elapsed-world clock** in addition to the familiar 24-hour dial. The clock advances during ordinary play, six-hour bed rest and twenty-minute radio rituals. Events are derived in O(1) from **world seed + region + 360-minute epoch**, never an always-running offscreen AI or mutable RNG state.
+- The Dead Foundry and Coolant Basin now each have an *optional* maintenance site, inspector-authored `MachineEventDefinition` Resource, and occasionally active neutral crew. Shifts are visible on authored terrain and do not target or detect the player. Idle and active states reflect what happened while Yuna was away.
+- During an active shift, an optional spare **alloy** (Foundry) or **coolant filter** (Basin) can be collected **once per region per shift**. Overflowing carry capacity never marks the loot collected; chunk unload/reload, repeat clicking or save/reload never duplicates it. This is bounded optional content, not critical progression or a hidden clue.
+- State persistence is **O(regions)** (last claim per region, not one world flag per event epoch). Save schema v11 validates elapsed minutes/claims atomically. Authored clue locations and existing static salvage caches are unchanged.
+- The two event nodes use existing non-hostile robot scenes and are intentionally a narrow ecology foundation, not a claim that rival machines fight one another or a complete simulated society.

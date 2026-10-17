@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 10
+const SAVE_VERSION: int = 11
 const HOME_SUPPLY_CAP: int = 12
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
@@ -17,6 +17,7 @@ var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
 var decor: ShelterDecorState = ShelterDecorState.new()
 var notebook: NotebookState = NotebookState.new()
+var ecology: MachineEcology = MachineEcology.new()
 var production: HomeProduction = HomeProduction.new()
 var condition: YunaCondition = YunaCondition.new()
 var voice: YunaVoice = YunaVoice.new()
@@ -38,6 +39,7 @@ func advance_time(delta: float) -> void:
     # Approximate 24 real minutes per in-game day, provisional balance.
     day_minutes = fposmod(day_minutes + delta, 1440.0)
     production.advance(delta)
+    ecology.advance(delta)
     voice.tick(delta)
 
 
@@ -115,6 +117,7 @@ func unwind_at_home() -> bool:
     condition.fatigue = maxf(0.0, condition.fatigue - 6.0)
     production.mark_unwind()
     production.advance(20.0)
+    ecology.advance(20.0)
     day_minutes = fposmod(day_minutes + 20.0, 1440.0)
     speak(&"quiet_ritual")
     report("A few minutes by the radio. The world can wait.")
@@ -126,6 +129,7 @@ func sleep_at_home() -> void:
     speak(&"rested")
     day_minutes = fposmod(day_minutes + 360.0, 1440.0)
     production.advance(360.0)
+    ecology.advance(360.0)
     report("Good. You needed that, Yuna.")
 
 
@@ -163,6 +167,7 @@ func snapshot() -> Dictionary:
         "storage": storage.snapshot(),
         "shelter_decor": decor.items(),
         "notebook": notebook.snapshot(),
+        "ecology": ecology.snapshot(),
         "home_production": production.snapshot(),
         "condition": condition.snapshot(),
         "voice_settings": voice.settings_snapshot(),
@@ -208,6 +213,12 @@ func restore_snapshot(data: Dictionary) -> bool:
         return false
     var restored_notebook := NotebookState.new()
     if not restored_notebook.restore_snapshot(raw_notebook as Dictionary):
+        return false
+    var raw_ecology: Variant = data.get("ecology", null)
+    if typeof(raw_ecology) != TYPE_DICTIONARY:
+        return false
+    var restored_ecology := MachineEcology.new()
+    if not restored_ecology.restore_snapshot(raw_ecology as Dictionary):
         return false
     var raw_production: Variant = data.get("home_production", null)
     if typeof(raw_production) != TYPE_DICTIONARY:
@@ -270,6 +281,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     storage = restored_storage
     decor = restored_decor
     notebook = restored_notebook
+    ecology = restored_ecology
     production = restored_production
     condition = restored_condition
     voice = restored_voice
