@@ -19,7 +19,10 @@ func snapshot() -> Dictionary:
 func restore_snapshot(raw: Dictionary) -> bool:
     if not _valid(raw):
         return false
-    _items = raw.duplicate(true)
+    var normalized: Dictionary = {}
+    for key: Variant in raw.keys():
+        normalized[key] = int(raw[key])
+    _items = normalized
     return true
 
 
@@ -77,10 +80,12 @@ func _valid(raw: Dictionary) -> bool:
     for key: Variant in raw.keys():
         if typeof(key) != TYPE_STRING or String(key).is_empty():
             return false
-        if typeof(raw[key]) != TYPE_INT:
+        if typeof(raw[key]) != TYPE_INT and typeof(raw[key]) != TYPE_FLOAT:
             return false
         var count: int = int(raw[key])
-        if count <= 0 or count > 99:
+        # JSON.parse_string creates floats for numeric JSON values, even "3".
+        # Accept only exact integral quantities; never truncate a fractional value.
+        if float(raw[key]) != float(count) or count <= 0 or count > 99:
             return false
         total += count
     return total <= CAPACITY
