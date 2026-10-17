@@ -28,7 +28,7 @@ func definition(kind: String) -> DecorDefinition:
     return DEFINITIONS.get(kind) as DecorDefinition
 
 
-func snapped(point: Vector2) -> Vector2:
+func snap_to_grid(point: Vector2) -> Vector2:
     return Vector2(snappedf(point.x, GRID_STEP), snappedf(point.y, GRID_STEP))
 
 
@@ -50,7 +50,7 @@ func can_place(kind: String, point: Vector2) -> bool:
         return false
     if not is_finite(point.x) or not is_finite(point.y):
         return false
-    var placement: Rect2 = Rect2(snapped(point) - decor.footprint * 0.5, decor.footprint)
+    var placement: Rect2 = Rect2(snap_to_grid(point) - decor.footprint * 0.5, decor.footprint)
     if not ROOM.encloses(placement):
         return false
     for forbidden: Rect2 in BLOCKED:
@@ -67,7 +67,7 @@ func can_place(kind: String, point: Vector2) -> bool:
 func place(kind: String, point: Vector2) -> bool:
     if not can_place(kind, point):
         return false
-    var grid: Vector2 = snapped(point)
+    var grid: Vector2 = snap_to_grid(point)
     _placements.append({"kind": kind, "x": grid.x, "y": grid.y})
     return true
 
@@ -108,7 +108,7 @@ func restore_snapshot(raw: Variant) -> bool:
         if not is_finite(float(x)) or not is_finite(float(y)):
             return false
         var point: Vector2 = Vector2(float(x), float(y))
-        if candidate.snapped(point) != point:
+        if candidate.snap_to_grid(point) != point:
             return false
         if not candidate.place(String(kind), point):
             return false

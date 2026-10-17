@@ -110,7 +110,7 @@ func _draw() -> void:
             draw_circle(center, 7.0, info.tint)
     if edit_mode:
         var current: DecorDefinition = GameSession.decor.definition(selected_kind)
-        var center: Vector2 = GameSession.decor.snapped(get_local_mouse_position())
+        var center: Vector2 = GameSession.decor.snap_to_grid(get_local_mouse_position())
         var allowed: bool = GameSession.decor.can_place(selected_kind, center)
         var tint: Color = Color(0.52, 0.89, 0.62, 0.52) if allowed else Color(0.95, 0.39, 0.37, 0.55)
         draw_rect(Rect2(center - current.footprint * 0.5, current.footprint), tint, false, 2.0)
