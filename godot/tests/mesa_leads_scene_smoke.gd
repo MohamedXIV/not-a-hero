@@ -57,12 +57,15 @@ func _check() -> void:
     if GameSession.notebook.mesa_leads() != ["eastern_service"]:
         _fail("Service route knowledge was lost after disk reload: %s" % str(GameSession.notebook.mesa_leads()))
         return
-    if GameSession.snapshot() != saved:
+    # Floats in condition change their least-significant bits when serialized
+    # through Godot's JSON file. Compare against the canonical persisted form.
+    var canonical_saved: Dictionary = JSON.parse_string(JSON.stringify(saved)) as Dictionary
+    if GameSession.snapshot() != canonical_saved:
         var after: Dictionary = GameSession.snapshot()
         for key: Variant in saved.keys():
-            if after.get(key) != saved[key]:
+            if after.get(key) != canonical_saved[key]:
                 print("DIAGNOSTIC: save field changed on reload: %s; before=%s; after=%s" % [
-                    str(key), str(saved[key]).left(550), str(after.get(key)).left(550)
+                    str(key), str(canonical_saved[key]).left(550), str(after.get(key)).left(550)
                 ])
         _fail("Session fields differ after mesa lead disk reload")
         return
