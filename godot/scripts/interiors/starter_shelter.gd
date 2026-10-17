@@ -58,6 +58,16 @@ func _add_furniture_collision(footprint: Rect2) -> void:
     add_child(body)
 
 
+func get_interaction_hint() -> String:
+    if yuna.position.distance_to(EXIT_POSITION) < 62.0:
+        return "E — Leave Little Nest"
+    if yuna.position.distance_to(chest.position) < 70.0:
+        return str(chest.call("get_interaction_label"))
+    if yuna.position.distance_to(workbench.position) < 92.0:
+        return str(workbench.call("get_interaction_label"))
+    return ""
+
+
 func _physics_process(_delta: float) -> void:
     yuna.position = yuna.position.clamp(Vector2(85, 120), Vector2(580, 455))
 
