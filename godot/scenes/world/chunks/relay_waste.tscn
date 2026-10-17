@@ -1,7 +1,15 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
+
+[ext_resource type="PackedScene" path="res://scenes/world/salvage_cache.tscn" id="2_dynamic"]
+[ext_resource type="Resource" path="res://resources/world/loot/relay_table.tres" id="3_loot"]
 
 [node name="RelayWasteChunk" type="Node2D"]
 script = ExtResource("1_chunk")
 style = 2
+
+[node name="AlloyCache" parent="." instance=ExtResource("2_dynamic")]
+position = Vector2(440, 485)
+persistent_id = &"world/relay_waste/alloy_cache_01"
+loot_table = ExtResource("3_loot")

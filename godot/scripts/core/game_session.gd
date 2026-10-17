@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 3
+const SAVE_VERSION: int = 4
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -13,6 +13,7 @@ var day_minutes: float = 8.0 * 60.0
 var world_seed: int = 1573
 var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
+var storage: InventoryState = InventoryState.new(120)
 var combat_state: Dictionary = {
     "selected": "pistol",
     "pistol": {"clip": 8, "reserve": 32},
@@ -58,6 +59,7 @@ func snapshot() -> Dictionary:
         "world_seed": world_seed,
         "world_flags": world_flags.duplicate(true),
         "inventory": bag.snapshot(),
+        "storage": storage.snapshot(),
         "combat_state": combat_state.duplicate(true),
     }
 
@@ -84,6 +86,12 @@ func restore_snapshot(data: Dictionary) -> bool:
         return false
     var restored_bag := InventoryState.new()
     if not restored_bag.restore_snapshot(raw_inventory as Dictionary):
+        return false
+    var raw_storage: Variant = data.get("storage", null)
+    if typeof(raw_storage) != TYPE_DICTIONARY:
+        return false
+    var restored_storage := InventoryState.new(120)
+    if not restored_storage.restore_snapshot(raw_storage as Dictionary):
         return false
     var stored_combat: Variant = data.get("combat_state", null)
     if typeof(stored_combat) != TYPE_DICTIONARY:
@@ -112,6 +120,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     world_seed = int(seed)
     world_flags = (flags as Dictionary).duplicate(true)
     bag = restored_bag
+    storage = restored_storage
     combat_state = next_combat
     return true
 

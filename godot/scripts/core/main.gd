@@ -33,6 +33,9 @@ func _process(delta: float) -> void:
         GameSession.bag.quantity(&"wire"),
         GameSession.bag.quantity(&"relay_fuse")
     ]
+    _hud.text += "\nBag %d/24 | Storage %d/120" % [
+        GameSession.bag.total_units(), GameSession.storage.total_units()
+    ]
     if GameSession.current_level == "outdoors":
         var selected: String = str(GameSession.combat_state.get("selected", "pistol"))
         var ammo: Dictionary = GameSession.combat_state.get(selected, {})
