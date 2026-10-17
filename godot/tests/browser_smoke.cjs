@@ -79,10 +79,12 @@ async function launchGame(context, errors) {
 }
 
 async function pressKey(page, key) {
+  // The headless WASM software renderer can deliver only a handful of game
+  // frames per second. A 160ms pulse intermittently falls between polls.
   await page.keyboard.down(key);
-  await page.waitForTimeout(160);
+  await page.waitForTimeout(500);
   await page.keyboard.up(key);
-  await page.waitForTimeout(440);
+  await page.waitForTimeout(850);
 }
 
 async function walk(page, keys, milliseconds) {
@@ -95,6 +97,28 @@ async function walk(page, keys, milliseconds) {
 async function saveUsingButton(page) {
   await page.mouse.click(1200, 38); // Godot CanvasLayer/SaveButton, not a DOM mock.
   await page.waitForTimeout(1100);
+}
+
+async function waitForLiveEngine(page, fixture, description) {
+  // Seeing a Canvas is not proof that Godot's WASM, Main scene and IDBFS
+  // restore have finished. An unmodified fixture already exists in IndexedDB.
+  // Require a NEW in-game Save button write with a strictly advanced
+  // simulation clock compared to the injected fixture.
+  const elapsed = fixture.ecology.elapsed_minutes;
+  for (let attempt = 0; attempt < 14; attempt++) {
+    await saveUsingButton(page);
+    const found = await inspectSave(page);
+    const current = found.found.find(x => x.snapshot?.version === SAVE_VERSION)?.snapshot;
+    if (current?.current_level === fixture.current_level &&
+        current.ecology.elapsed_minutes > elapsed + 0.5 &&
+        current.mesa?.depth_open === fixture.mesa.depth_open) {
+      console.log('Engine-ready scene/IDBFS heartbeat:', description,
+        {elapsedBefore: elapsed, elapsedNow: current.ecology.elapsed_minutes, attempt});
+      return current;
+    }
+    await page.waitForTimeout(800);
+  }
+  throw new Error(description + ': canvas shown but Godot scene did not save a fresh world-clock tick');
 }
 
 function seededLowerGallery(fresh) {
@@ -209,12 +233,10 @@ async function overwritePersistedSaveFromSeedPage(context, snapshot) {
     // Seed ONLY the entry-state using the versioned state record while Godot
     // isn't running, then execute the *real* scenes, controls and further saves.
     await page.close();
-    await overwritePersistedSaveFromSeedPage(context, seededLowerGallery(returned));
+    const lowerFixture = seededLowerGallery(returned);
+    await overwritePersistedSaveFromSeedPage(context, lowerFixture);
     page = await launchGame(context, errors);
-    await saveUsingButton(page);
-    const atArchive = await expectSave(page, 'Seeded deep-room boot', s =>
-      s.current_level === 'mesa_depth' && s.mesa.depth_open &&
-      !s.mesa.depth_archive_read);
+    const atArchive = await waitForLiveEngine(page, lowerFixture, 'Seeded lower archive');
     assert.deepEqual(atArchive.notebook.observed, [], 'Unobserved secrets leaked at boot');
     await page.screenshot({path: '/tmp/nah-depth-cold.png'});
 
@@ -233,14 +255,15 @@ async function overwritePersistedSaveFromSeedPage(context, snapshot) {
     // IndexedDB only while the Godot game is not running. All actual archive
     // and regulator actions remain real E input inside the exported game.
     await page.close();
-    await overwritePersistedSaveFromSeedPage(context, {
+    const regulatorFixture = {
       ...observed, mesa_depth_position: [415, 390],
-    });
+    };
+    await overwritePersistedSaveFromSeedPage(context, regulatorFixture);
     page = await launchGame(context, errors);
-    await saveUsingButton(page);
-    const approached = await expectSave(page, 'Restored witnessed log near regulator', s =>
-      s.current_level === 'mesa_depth' && s.mesa.depth_archive_read &&
-      !s.mesa.depth_warm && s.notebook.observed.includes('mesa_thermal_archive'));
+    const approached = await waitForLiveEngine(page, regulatorFixture, 'Lower regulator');
+    assert(approached.mesa.depth_archive_read && !approached.mesa.depth_warm &&
+      approached.notebook.observed.includes('mesa_thermal_archive'),
+      'Witnessed log lost while restoring regulator scene');
     assert(Math.hypot(approached.mesa_depth_position[0] - 415,
       approached.mesa_depth_position[1] - 390) < 62,
       'Regulator waypoint invalid in real WebGL2 level');
@@ -268,17 +291,14 @@ async function overwritePersistedSaveFromSeedPage(context, snapshot) {
     // isolates browser event/save/scene-transition correctness from slow
     // renderer-dependent multi-minute movement (tested in real Godot scenes).
     await page.close();
-    await overwritePersistedSaveFromSeedPage(context, {
+    const returnFixture = {
       ...reloaded, mesa_depth_position: [125, 493],
-    });
+    };
+    await overwritePersistedSaveFromSeedPage(context, returnFixture);
     page = await launchGame(context, errors);
-    // Godot WASM may still be asynchronously mounting IDBFS when the Canvas
-    // first becomes visible; never send transition input before the actual
-    // new scene has finished loading the injected save.
-    await saveUsingButton(page);
-    const atExit = await expectSave(page, 'Lower exit scene is actually ready', s =>
-      s.current_level === 'mesa_depth' && s.mesa.depth_warm &&
-      Math.hypot(s.mesa_depth_position[0] - 125, s.mesa_depth_position[1] - 493) < 4);
+    const atExit = await waitForLiveEngine(page, returnFixture, 'Lower return lift');
+    assert(Math.hypot(atExit.mesa_depth_position[0] - 125,
+      atExit.mesa_depth_position[1] - 493) < 4, 'Return waypoint did not restore');
     assert(atExit.mesa.depth_archive_read, 'Warm saved archive was lost before exit');
     await page.screenshot({path: '/tmp/nah-depth-exit-ready.png'});
     await page.locator('canvas').click({position: {x: 640, y: 355}});
