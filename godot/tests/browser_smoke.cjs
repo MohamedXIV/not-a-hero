@@ -272,7 +272,17 @@ async function overwritePersistedSaveFromSeedPage(context, snapshot) {
       ...reloaded, mesa_depth_position: [125, 493],
     });
     page = await launchGame(context, errors);
+    // Godot WASM may still be asynchronously mounting IDBFS when the Canvas
+    // first becomes visible; never send transition input before the actual
+    // new scene has finished loading the injected save.
+    await saveUsingButton(page);
+    const atExit = await expectSave(page, 'Lower exit scene is actually ready', s =>
+      s.current_level === 'mesa_depth' && s.mesa.depth_warm &&
+      Math.hypot(s.mesa_depth_position[0] - 125, s.mesa_depth_position[1] - 493) < 4);
+    assert(atExit.mesa.depth_archive_read, 'Warm saved archive was lost before exit');
+    await page.screenshot({path: '/tmp/nah-depth-exit-ready.png'});
     await page.locator('canvas').click({position: {x: 640, y: 355}});
+    await page.waitForTimeout(500);
     await pressKey(page, 'e');
     await saveUsingButton(page);
     const upstairs = await expectSave(page, 'Real E from depth to main Mesa', s =>
