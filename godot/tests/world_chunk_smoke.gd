@@ -13,6 +13,7 @@ func _check() -> void:
     GameSession.outdoor_position = Vector2(160, 330)
     GameSession.set_world_flag(&"world/ash_flats/relay_01", false)
     GameSession.set_world_flag(&"world/ash_flats/scrap_cache_01", false)
+    GameSession.set_world_flag(&"world/ash_flats/salvage_02", false)
     GameSession.bag = InventoryState.new()
     var scene: PackedScene = load("res://scenes/world/outdoors.tscn") as PackedScene
     var outdoors: Node2D = scene.instantiate() as Node2D
@@ -52,6 +53,11 @@ func _check() -> void:
         _fail("relay did not change the authoritative world")
         return
     var yuna: CharacterBody2D = outdoors.get_node("Yuna") as CharacterBody2D
+    var extra: Node2D = outdoors.get_node_or_null("WorldStreamer/AshFlatsChunk/ExtraSalvage") as Node2D
+    if extra == null or not extra.call("interact") or GameSession.bag.total_units() == 0:
+        _fail("seeded Ash Flats salvage did not yield an item")
+        return
+    var looted_bag: Dictionary = GameSession.bag.snapshot()
     yuna.position = Vector2(1500, 280)
     outdoors.call("_sync_chunks")
     await get_tree().process_frame
@@ -62,11 +68,18 @@ func _check() -> void:
     outdoors.call("_sync_chunks")
     await get_tree().process_frame
     relay = outdoors.get_node_or_null("WorldStreamer/AshFlatsChunk/RelaySwitch") as Node2D
+    extra = outdoors.get_node_or_null("WorldStreamer/AshFlatsChunk/ExtraSalvage") as Node2D
+    if extra == null or not extra.get("looted") or extra.call("interact"):
+        _fail("seeded cache rerolled after chunk unload")
+        return
+    if GameSession.bag.snapshot() != looted_bag:
+        _fail("reloaded seeded cache changed player bag")
+        return
     cache = outdoors.get_node_or_null("WorldStreamer/AshFlatsChunk/SalvageCache") as Node2D
     if cache == null or not cache.get("looted"):
         _fail("salvage cache rerolled after chunk reload")
         return
-    if cache.call("interact") or GameSession.bag.quantity(&"scrap") != 0:
+    if cache.call("interact") or GameSession.bag.snapshot() != looted_bag:
         _fail("reloaded cache duplicated items")
         return
     if relay == null or not relay.get("is_active"):

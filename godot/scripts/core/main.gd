@@ -14,6 +14,9 @@ var _last_transition_msec: int = -100000
 
 func _ready() -> void:
     var had_save: bool = GameSession.load_from_disk()
+    if not had_save:
+        # New worlds vary in salvage population, but authored terrain stays fixed.
+        GameSession.world_seed = randi()
     _build_hud()
     _open_level(GameSession.current_level)
     if had_save:
