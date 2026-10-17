@@ -6,6 +6,7 @@ const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_she
 
 var _level: Node2D
 var _hud: Label
+var _status_detail: Label
 var _save_button: Button
 var _save_message: String = ""
 var _save_message_until: int = 0
@@ -29,7 +30,7 @@ func _process(delta: float) -> void:
         _write_save()
     var hour: int = int(GameSession.day_minutes / 60.0)
     var minute: int = int(GameSession.day_minutes) % 60
-    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | F6 save\n" % [hour, minute]
+    _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | Tab condition | F6 save\n" % [hour, minute]
     _hud.text += "Little Nest" if GameSession.current_level == "shelter" else "Machine flats — relay: " + ("active" if GameSession.get_world_flag(&"world/ash_flats/relay_01") else "inactive")
     _hud.text += "\nScrap %d  |  Wire %d  |  Relay fuse %d" % [
         GameSession.bag.quantity(&"scrap"),
@@ -44,6 +45,22 @@ func _process(delta: float) -> void:
         var ammo: Dictionary = GameSession.combat_state.get(selected, {})
         _hud.text += "\n1 Pistol | 2 Rifle | Click fire | R reload — %s %d/%d" % [
             selected.capitalize(), int(ammo.get("clip", 0)), int(ammo.get("reserve", 0))
+        ]
+    var state: YunaCondition = GameSession.condition
+    if state.composure < 55.0:
+        _hud.text += "\nFeeling %s — find cover or head home" % state.composure_label().to_lower()
+    if state.stamina < 48.0:
+        _hud.text += "\nOut of breath — slow down"
+    if state.injury_description() != "Uninjured":
+        _hud.text += "\n" + state.injury_description()
+    if state.hydration < 28.0 or state.nourishment < 24.0 or state.fatigue > 72.0:
+        _hud.text += "\n" + ("Thirsty " if state.hydration < 28.0 else "") + ("Hungry " if state.nourishment < 24.0 else "") + ("Tired" if state.fatigue > 72.0 else "")
+    if Input.is_action_just_pressed("status_panel"):
+        _status_detail.visible = not _status_detail.visible
+    if _status_detail.visible:
+        _status_detail.text = "YUNA — CONDITION\nComposure: %s (%.0f)\nStamina: %.0f\nRest: %.0f/100 tired\nNourishment: %.0f\nHydration: %.0f\n%s\n\nTab closes" % [
+            state.composure_label(), state.composure, state.stamina, state.fatigue,
+            state.nourishment, state.hydration, state.injury_description()
         ]
     if GameSession.current_feedback() != "":
         _hud.text += "\n" + GameSession.current_feedback()
@@ -84,6 +101,13 @@ func _build_hud() -> void:
     _hud.add_theme_color_override("font_color", Color("#f5dfba"))
     _hud.add_theme_font_size_override("font_size", 17)
     overlay.add_child(_hud)
+    _status_detail = Label.new()
+    _status_detail.name = "ConditionDetails"
+    _status_detail.position = Vector2(18, 205)
+    _status_detail.add_theme_font_size_override("font_size", 20)
+    _status_detail.add_theme_color_override("font_color", Color("#f5dfba"))
+    _status_detail.visible = false
+    overlay.add_child(_status_detail)
 
     # Genuine save control; browser keys such as F5 may trigger a page reload.
     _save_button = Button.new()

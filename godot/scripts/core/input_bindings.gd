@@ -10,6 +10,7 @@ static func install_defaults() -> void:
     _ensure_key(&"interact", KEY_E)
     _ensure_key(&"sprint", KEY_SHIFT)
     _ensure_key(&"quick_save", KEY_F6)
+    _ensure_key(&"status_panel", KEY_TAB)
     _ensure_key(&"weapon_pistol", KEY_1)
     _ensure_key(&"weapon_rifle", KEY_2)
     _ensure_key(&"reload", KEY_R)

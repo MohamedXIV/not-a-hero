@@ -6,6 +6,7 @@ signal transition_requested(destination: String)
 
 const LightFactory = preload("res://scripts/presentation/light_factory.gd")
 const EXIT_POSITION: Vector2 = Vector2(330, 443)
+const BED_USE_POINT: Vector2 = Vector2(215, 279)
 
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var workbench: Node2D = $Workbench
@@ -61,6 +62,8 @@ func _add_furniture_collision(footprint: Rect2) -> void:
 func get_interaction_hint() -> String:
     if yuna.position.distance_to(EXIT_POSITION) < 62.0:
         return "E — Leave Little Nest"
+    if yuna.position.distance_to(BED_USE_POINT) < 62.0:
+        return "E — Rest in your own bed"
     if yuna.position.distance_to(chest.position) < 70.0:
         return str(chest.call("get_interaction_label"))
     if yuna.position.distance_to(workbench.position) < 92.0:
@@ -77,6 +80,9 @@ func _process(_delta: float) -> void:
     if Input.is_action_just_pressed("interact"):
         if yuna.position.distance_to(EXIT_POSITION) < 62.0:
             transition_requested.emit("outdoors")
+        elif yuna.position.distance_to(BED_USE_POINT) < 62.0:
+            GameSession.sleep_at_home()
+            GameSession.save_to_disk()
         elif yuna.position.distance_to(chest.position) < 70.0:
             chest.call("interact", Input.is_action_pressed("sprint"))
             GameSession.save_to_disk()
