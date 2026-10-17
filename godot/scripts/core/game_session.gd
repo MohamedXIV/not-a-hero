@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 7
+const SAVE_VERSION: int = 8
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -14,6 +14,7 @@ var world_seed: int = 1573
 var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
+var decor: ShelterDecorState = ShelterDecorState.new()
 var condition: YunaCondition = YunaCondition.new()
 var voice: YunaVoice = YunaVoice.new()
 var home_supplies: Dictionary = {"meals": 4, "water": 6}
@@ -109,6 +110,7 @@ func snapshot() -> Dictionary:
         "world_flags": world_flags.duplicate(true),
         "inventory": bag.snapshot(),
         "storage": storage.snapshot(),
+        "shelter_decor": decor.items(),
         "condition": condition.snapshot(),
         "voice_settings": voice.settings_snapshot(),
         "home_supplies": home_supplies.duplicate(true),
@@ -144,6 +146,9 @@ func restore_snapshot(data: Dictionary) -> bool:
         return false
     var restored_storage := InventoryState.new(120)
     if not restored_storage.restore_snapshot(raw_storage as Dictionary):
+        return false
+    var restored_decor := ShelterDecorState.new()
+    if not restored_decor.restore_snapshot(data.get("shelter_decor", null)):
         return false
     var raw_condition: Variant = data.get("condition")
     if typeof(raw_condition) != TYPE_DICTIONARY:
@@ -198,6 +203,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     world_flags = (flags as Dictionary).duplicate(true)
     bag = restored_bag
     storage = restored_storage
+    decor = restored_decor
     condition = restored_condition
     voice = restored_voice
     home_supplies = restored_supplies
