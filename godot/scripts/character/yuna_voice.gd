@@ -105,6 +105,21 @@ const BARKS: Dictionary = {
         "lines": ["You grew that, Yuna. In real sunlight.",
                   "Just a handful, Yuna. Enough for today."]
     },
+    "noticed_mesa_tracks": {
+        "priority": 52, "cooldown": 110.0,
+        "lines": ["It's coming back to the same marks. Not after you, Yuna.",
+                  "Same groove. Same turn. What calls it here, Yuna?"]
+    },
+    "noticed_mesa_carrier": {
+        "priority": 67, "cooldown": 115.0,
+        "lines": ["A maintenance return. Still asking for someone, Yuna?",
+                  "A service call with no name. That's... a little sad, Yuna."]
+    },
+    "mesa_return_diverted": {
+        "priority": 60, "cooldown": 80.0,
+        "lines": ["There. Let them follow a safer line, Yuna.",
+                  "You didn't have to hurt it. Just changed where it listens."]
+    },
     "mesa_rear_nook": {
         "priority": 63, "cooldown": 110.0,
         "lines": ["A screen and a blanket. Small things count, Yuna.",

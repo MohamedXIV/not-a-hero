@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/mesa/mesa_carrier_panel.gd" id="1_carrier"]
+
+[node name="CarrierPanel" type="Node2D"]
+script = ExtResource("1_carrier")
+position = Vector2(1060, 522)

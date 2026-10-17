@@ -11,6 +11,8 @@ const DEFINITIONS: Dictionary = {
     "basin_reverse_flow": preload("res://resources/discoveries/basin_reverse_flow.tres"),
     "cable_eastbound_feeder": preload("res://resources/discoveries/cable_eastbound_feeder.tres"),
     "basin_return_manifold": preload("res://resources/discoveries/basin_return_manifold.tres"),
+    "mesa_service_tracks": preload("res://resources/discoveries/mesa_service_tracks.tres"),
+    "mesa_return_carrier": preload("res://resources/discoveries/mesa_return_carrier.tres"),
 }
 
 var _seen: Array[String] = []
@@ -70,6 +72,12 @@ const CONNECTIONS: Array[Dictionary] = [
         "sources": ["foundry_shift_cycle", "basin_return_manifold"],
         "text": "The press and the return manifold keep time with distant machinery. The return goes beneath the eastern shelf—could there be a working installation?",
         "mesa_lead": true,
+    },
+    {
+        "id": "unanswered_service",
+        "sources": ["mesa_service_tracks", "mesa_return_carrier"],
+        "text": "Those hatch-side service grooves and the live return carrier match a repeated maintenance approach. Perhaps the machines are answering an old service call, but who sent it and what lies below are still unknown.",
+        "mesa_lead": false,
     },
 ]
 
