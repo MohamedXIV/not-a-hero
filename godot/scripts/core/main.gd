@@ -19,6 +19,7 @@ var _save_button: Button
 var _save_message: String = ""
 var _save_message_until: int = 0
 var _last_transition_msec: int = -100000
+var _transition_requires_release: bool = false
 
 
 func _ready() -> void:
@@ -34,6 +35,10 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+    # A held E must not bounce Yuna between facing doors. Browser keyboard
+    # repeat can outlive the 450ms transition cooldown.
+    if _transition_requires_release and not Input.is_action_pressed("interact"):
+        _transition_requires_release = false
     GameSession.advance_time(delta)
     if Input.is_action_just_pressed("field_dressing"):
         if GameSession.use_field_dressing():
@@ -151,10 +156,13 @@ func _open_level(level_id: String) -> void:
 
 
 func _on_transition(target: String) -> void:
+    if _transition_requires_release:
+        return
     var now: int = Time.get_ticks_msec()
     if now - _last_transition_msec < 450:
         return
     _last_transition_msec = now
+    _transition_requires_release = true
     var previous_level: String = GameSession.current_level
     _open_level(target)
     if target == "shelter":
