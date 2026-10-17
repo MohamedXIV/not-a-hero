@@ -1,6 +1,6 @@
 extends Node2D
-## P4a: the mesa is a real, larger interior, initially dark and only partly
-## habitable. The first sector can be made safe; other systems remain shut.
+## A partly habitable authored refuge. Utilities, growth and furniture are
+## tangible local interactions; deeper equipment chambers remain unfinished.
 signal transition_requested(destination: String)
 
 const LightFactory = preload("res://scripts/presentation/light_factory.gd")
@@ -11,10 +11,14 @@ const POWER_PANEL: Vector2 = Vector2(302, 328)
 const FLOW_PANEL: Vector2 = Vector2(837, 355)
 const REST_BENCH: Vector2 = Vector2(348, 467)
 const WATER_FAUCET: Vector2 = Vector2(839, 461)
+const COURT_CONTROL: Vector2 = Vector2(650, 260)
+const GROWING_BED: Vector2 = Vector2(513, 449)
 
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var ambient: CanvasModulate = $Ambient
+@onready var decorator: Node2D = $ShelterDecorator
 
+var _court_light: PointLight2D
 var _utility_light: PointLight2D
 var _rear_barrier: StaticBody2D
 
@@ -47,6 +51,12 @@ func _ready() -> void:
     _utility_light.texture_scale = 5.3
     _utility_light.color = Color("#a2c7b6")
     add_child(_utility_light)
+    _court_light = PointLight2D.new()
+    _court_light.position = GROWING_BED
+    _court_light.texture = LightFactory.radial_texture()
+    _court_light.texture_scale = 2.3
+    _court_light.color = Color("#bfd89f")
+    add_child(_court_light)
     # The physical safety barrier lifts only when circulation is repaired.
     if not GameSession.mesa.flow_online():
         _rear_barrier = _add_collision(Rect2(956, 74, 36, 520))
@@ -74,13 +84,15 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
     GameSession.mesa_position = yuna.position
-    if Input.is_action_just_pressed("interact"):
+    if Input.is_action_just_pressed("interact") and not decorator.edit_mode:
         _interact_nearby()
-    if Input.is_action_just_pressed("mesa_repair"):
+    if Input.is_action_just_pressed("mesa_repair") and not decorator.edit_mode:
         _use_spare_part()
 
 
 func get_interaction_hint() -> String:
+    if decorator.edit_mode:
+        return str(decorator.call("hint"))
     if yuna.position.distance_to(EXIT_POINT) < 68.0:
         return "E — Return outside (Little Nest remains home)"
     if yuna.position.distance_to(SAFETY_PANEL) < 75.0:
@@ -96,11 +108,21 @@ func get_interaction_hint() -> String:
             return "Circulation needs power first."
         return ("Coolant circulation stable" if GameSession.mesa.flow_online()
                 else "E — Manually purge loop (%d/2) | Q — Use filter" % GameSession.mesa.flow_progress)
+    if yuna.position.distance_to(COURT_CONTROL) < 57.0:
+        if not GameSession.mesa.flow_online():
+            return "Sun court irrigation: restore the coolant loop first."
+        return ("The sun court is alive" if GameSession.mesa.court_restored()
+                else "E — Rebuild growing-court valves (%d/2)" % GameSession.mesa.court_progress)
+    if yuna.position.distance_to(GROWING_BED) < 57.0:
+        if not GameSession.mesa.court_restored():
+            return "The old root bed needs clean circulation."
+        return ("E — Eat fresh courtyard greens" if GameSession.mesa.court_ready
+                else "Young shoots growing in natural light")
     if yuna.position.distance_to(WATER_FAUCET) < 52.0:
         return "E — Drink clean water" if GameSession.mesa.flow_online() else "Water tap: no clean flow yet."
     if yuna.position.distance_to(REST_BENCH) < 62.0:
         return "E — Rest on the recovered bench" if GameSession.mesa.power_online() else "Bench: too cold and dark to settle yet."
-    return "A shaft of real sunlight... and rooms still sealed."
+    return "A shaft of sunlight. " + str(decorator.call("hint"))
 
 
 func _interact_nearby() -> void:
@@ -138,6 +160,26 @@ func _interact_nearby() -> void:
             GameSession.save_to_disk()
         else:
             GameSession.report("The pumps need working power first, Yuna.")
+    elif yuna.position.distance_to(COURT_CONTROL) < 57.0:
+        if GameSession.mesa.restore_court_stage():
+            GameSession.advance_time(MesaState.WORK_MINUTES)
+            _refresh_visuals()
+            if GameSession.mesa.court_restored():
+                GameSession.speak(&"mesa_court_restored")
+                GameSession.report("Old valves breathe again. The sun court can grow.")
+            else:
+                GameSession.report("First valve turned. The second one will open the bed.")
+            GameSession.save_to_disk()
+        else:
+            GameSession.report("The growing court needs clean circulation first.")
+    elif yuna.position.distance_to(GROWING_BED) < 57.0:
+        if GameSession.mesa.harvest_court(GameSession.condition):
+            _refresh_visuals()
+            GameSession.speak(&"mesa_greens")
+            GameSession.report("Fresh greens. Nothing to carry, just a quiet meal.")
+            GameSession.save_to_disk()
+        else:
+            GameSession.report("Let the roots grow, or save the greens until you're hungry.")
     elif yuna.position.distance_to(WATER_FAUCET) < 52.0:
         if GameSession.mesa.flow_online() and GameSession.condition.drink_water():
             GameSession.report("Clean water, from a place you repaired yourself.")
@@ -177,6 +219,8 @@ func _refresh_visuals() -> void:
             else Color("#68615b") if GameSession.mesa.first_sector_safe else Color("#354653"))
     if _utility_light != null:
         _utility_light.energy = 0.9 if GameSession.mesa.power_online() else 0.0
+    if _court_light != null:
+        _court_light.energy = 0.65 if GameSession.mesa.court_restored() else 0.0
     if GameSession.mesa.flow_online() and is_instance_valid(_rear_barrier):
         remove_child(_rear_barrier)
         _rear_barrier.queue_free()
@@ -201,7 +245,21 @@ func _draw() -> void:
         draw_line(Vector2(x, 75), Vector2(x, 262), Color("#515b60"), 8)
     # Tangible but unpowered growing court and engineering platforms.
     draw_rect(Rect2(360, 365, 245, 182), Color("#3b5452"))
-    draw_rect(Rect2(387, 393, 185, 120), Color("#6b775e"))
+    draw_rect(Rect2(387, 393, 185, 120),
+        Color("#536e4e") if GameSession.mesa.court_restored() else Color("#6b775e"))
+    for i: int in range(5):
+        var root: Vector2 = Vector2(406 + i * 35, 442)
+        if GameSession.mesa.court_restored():
+            draw_line(root, root + Vector2(0, -16), Color("#91c68e"), 3.0)
+            draw_circle(root + Vector2(-6, -17), 7.0, Color("#80b87b"))
+            if GameSession.mesa.court_ready:
+                draw_circle(root + Vector2(6, -24), 10.0, Color("#c9de8f"))
+        else:
+            draw_line(root - Vector2(7, 0), root + Vector2(8, 0), Color("#554a40"), 3.0)
+    draw_rect(Rect2(COURT_CONTROL - Vector2(19, 14), Vector2(38, 28)),
+        Color("#6aa889") if GameSession.mesa.court_restored() else Color("#4b5254"))
+    draw_circle(COURT_CONTROL, 6.0, Color("#c6eaba") if GameSession.mesa.court_restored()
+        else Color("#c38b69"))
     draw_rect(Rect2(615, 322, 167, 103), Color("#464a50"))
     draw_rect(Rect2(648, 341, 104, 63), Color("#819198"))
     draw_circle(SAFETY_PANEL, 11, Color("#8fd4ba") if GameSession.mesa.first_sector_safe else Color("#de895e"))
