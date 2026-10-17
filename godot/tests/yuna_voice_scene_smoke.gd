@@ -20,12 +20,17 @@ func _check() -> void:
     if not GameSession.speak(&"enemy_spotted"):
         _fail("Could not raise high-priority bark")
         return
-    await get_tree().process_frame
+    # Update the same real HUD method explicitly; deferred setup can run
+    # before the first automatic _process() in headless Godot.
+    main.call("_process", 0.0)
+    if GameSession.voice.subtitle().is_empty():
+        _fail("YunaVoice has no live line despite an accepted event")
+        return
     if not subtitle.visible or not subtitle.text.contains("Yuna"):
         _fail("High-priority self-talk not rendered as a subtitle")
         return
     GameSession.voice.subtitles_enabled = false
-    await get_tree().process_frame
+    main.call("_process", 0.0)
     if subtitle.visible:
         _fail("Subtitle preference did not hide the label")
         return
