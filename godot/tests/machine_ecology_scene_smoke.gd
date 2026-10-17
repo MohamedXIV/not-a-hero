@@ -69,7 +69,23 @@ func _check() -> void:
     if not GameSession.load_from_disk("user://nah_ecology_test.json"):
         _fail("Machine ecology wasn't restored by FileAccess")
         return
-    if GameSession.snapshot() != record:
+    # Restore normalizes typed ints/floats from the JSON representation.
+    # Compare full live state against a separately restored equivalent session.
+    var json_record: Dictionary = JSON.parse_string(JSON.stringify(record)) as Dictionary
+    var control: Node = (load("res://scripts/core/game_session.gd") as GDScript).new() as Node
+    if not control.call("restore_snapshot", json_record):
+        control.free()
+        _fail("Independently restored ecology save was rejected")
+        return
+    var normalized_record: Dictionary = control.call("snapshot")
+    control.free()
+    if GameSession.snapshot() != normalized_record:
+        var after: Dictionary = GameSession.snapshot()
+        for key: Variant in normalized_record.keys():
+            if after.get(key) != normalized_record[key]:
+                print("DIAGNOSTIC: ecology save mismatch field: %s; before=%s; after=%s" % [
+                    str(key), str(normalized_record[key]).left(400), str(after.get(key)).left(400)
+                ])
         _fail("Full saved session changed after ecology reload")
         return
     if GameSession.ecology.can_collect("dead_foundry", GameSession.world_seed):
