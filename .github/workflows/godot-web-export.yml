@@ -1,0 +1,52 @@
+name: Godot Web export feasibility
+
+on:
+  pull_request:
+    paths:
+      - "godot/export_presets.cfg"
+      - ".github/workflows/godot-web-export.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare official Godot 4.7.2 and Web-only export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/godot
+          curl -fsSL --retry 3 -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+          # Official template archive contains all targets; extract only the Web files.
+          curl -fsSL --retry 3 -o /tmp/templates.tpz https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.7.2.stable"
+          unzip -q -j /tmp/templates.tpz 'templates/web*' -d "$HOME/.local/share/godot/export_templates/4.7.2.stable"
+          ls -lh "$HOME/.local/share/godot/export_templates/4.7.2.stable"/
+          rm -f /tmp/templates.tpz /tmp/godot.zip
+      - name: Import and export Web build
+        shell: bash
+        run: |
+          set -euo pipefail
+          ENGINE=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+          "$ENGINE" --headless --path godot --editor --import --quit 2>&1 | tee /tmp/import.log
+          mkdir -p godot/build/web
+          "$ENGINE" --headless --path godot --export-release "Web" "$(pwd)/godot/build/web/index.html" 2>&1 | tee /tmp/export.log
+          for logfile in /tmp/import.log /tmp/export.log; do
+            if grep -E 'ERROR:|SCRIPT ERROR:|Parse Error:|Failed to load|Export failed' "$logfile"; then exit 1; fi
+          done
+          test -s godot/build/web/index.html
+          find godot/build/web -maxdepth 1 -type f -printf '%f %s bytes\n'
+          find godot/build/web -maxdepth 1 -name '*.wasm' -size +0c | grep -q .
+          echo 'PASS: Godot 4.7.2 Compatibility HTML5 export produced HTML and WASM'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: godot-p0-web-build
+          path: godot/build/web/
+          retention-days: 3
