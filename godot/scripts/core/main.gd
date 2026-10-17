@@ -7,6 +7,7 @@ const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_she
 var _level: Node2D
 var _hud: Label
 var _status_detail: Label
+var _subtitle: Label
 var _save_button: Button
 var _save_message: String = ""
 var _save_message_until: int = 0
@@ -30,6 +31,14 @@ func _process(delta: float) -> void:
     if Input.is_action_just_pressed("field_dressing"):
         if GameSession.use_field_dressing():
             GameSession.save_to_disk()
+    if Input.is_action_just_pressed("voice_toggle"):
+        GameSession.voice.incidental_enabled = not GameSession.voice.incidental_enabled
+        GameSession.report("Incidental self-talk: %s" % ("on" if GameSession.voice.incidental_enabled else "off"))
+        GameSession.save_to_disk()
+    if Input.is_action_just_pressed("subtitle_toggle"):
+        GameSession.voice.subtitles_enabled = not GameSession.voice.subtitles_enabled
+        GameSession.report("Self-talk subtitles: %s" % ("on" if GameSession.voice.subtitles_enabled else "off"))
+        GameSession.save_to_disk()
     if Input.is_action_just_pressed("quick_save"):
         _write_save()
     var hour: int = int(GameSession.day_minutes / 60.0)
@@ -71,6 +80,10 @@ func _process(delta: float) -> void:
             int(GameSession.home_supplies["meals"]),
             int(GameSession.home_supplies["water"]),
         ]
+    var spoken: String = GameSession.voice.subtitle()
+    _subtitle.visible = not spoken.is_empty()
+    if _subtitle.visible:
+        _subtitle.text = "Yuna: " + spoken
     if GameSession.current_feedback() != "":
         _hud.text += "\n" + GameSession.current_feedback()
     if Time.get_ticks_msec() < _save_message_until:
@@ -99,6 +112,8 @@ func _on_transition(target: String) -> void:
         return
     _last_transition_msec = now
     _open_level(target)
+    if target == "shelter":
+        GameSession.speak(&"home_return")
     GameSession.save_to_disk()
 
 
