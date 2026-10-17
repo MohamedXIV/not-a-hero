@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/mesa/mesa_refuge.gd" id="1_refuge"]
 [ext_resource type="PackedScene" path="res://scenes/actors/yuna.tscn" id="2_yuna"]
@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/interiors/mesa_rear_nook.tscn" id="4_nook"]
 
 [ext_resource type="PackedScene" path="res://scenes/interiors/mesa_carrier_panel.tscn" id="5_carrier"]
+
+[ext_resource type="PackedScene" path="res://scenes/interiors/mesa_depth_lift.tscn" id="6_depth_lift"]
 
 [node name="MesaRefuge" type="Node2D"]
 script = ExtResource("1_refuge")
@@ -23,3 +25,5 @@ color = Color(0.3, 0.36, 0.42, 1)
 location_id = "mesa"
 
 [node name="CarrierPanel" parent="." instance=ExtResource("5_carrier")]
+
+[node name="DepthLift" parent="." instance=ExtResource("6_depth_lift")]
