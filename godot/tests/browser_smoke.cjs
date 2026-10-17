@@ -78,28 +78,22 @@ async function waitForSave(page) {
            'Browser has no WebGL2 context');
     await page.waitForTimeout(6000);
     await page.locator('canvas').click({position:{x:640,y:350}});
-    // Yuna begins at shelter Y=365, hatch at Y=443.
-    await page.keyboard.down('s');
-    await page.waitForTimeout(480);
-    await page.keyboard.up('s');
-    await page.keyboard.press('e');
-    await page.waitForTimeout(2000);
-    // Hatch transition already autosaves x=160; move beyond the autosave position.
-    // Only the on-screen Save button can persist this later coordinate.
+    // Move *within the shelter* before any autosave can occur. This isolates
+    // the actual Save button rather than incidentally passing on an E transition.
     await page.keyboard.down('d');
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(1800);
     await page.keyboard.up('d');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(450);
     await page.mouse.click(1200, 38);
     await page.waitForTimeout(2500);
     const saved = await waitForSave(page);
     console.log('IndexedDB before reload:', JSON.stringify(saved));
     const snapshot = saved.matchingSaves.find(x => x.snapshot?.version === 1)?.snapshot;
     assert(snapshot, 'No persisted user:// JSON save found in IndexedDB');
-    assert.equal(snapshot.current_level, 'outdoors', 'E-hatch transition did not persist');
-    assert(snapshot.outdoor_position?.[0] > 225,
-           'Save button did not persist movement after transition autosave; got ' +
-           JSON.stringify(snapshot.outdoor_position));
+    assert.equal(snapshot.current_level, 'shelter', 'Saved initial shelter unexpectedly changed scenes');
+    assert(snapshot.shelter_position?.[0] > 380,
+           'Save button did not persist new shelter position; got ' +
+           JSON.stringify(snapshot.shelter_position));
     await page.screenshot({path: '/tmp/nah-before-reload.png'});
     await page.reload({waitUntil: 'domcontentloaded', timeout: 60_000});
     await page.waitForTimeout(6000);
@@ -107,12 +101,12 @@ async function waitForSave(page) {
     console.log('IndexedDB after reload:', JSON.stringify(restored));
     const persisted = restored.matchingSaves.find(x => x.snapshot?.version === 1)?.snapshot;
     assert(persisted, 'Save disappeared from IndexedDB after browser reload');
-    assert.equal(persisted.current_level, 'outdoors');
-    assert(persisted.outdoor_position[0] > 225,
+    assert.equal(persisted.current_level, 'shelter');
+    assert(persisted.shelter_position[0] > 380,
            'Saved position missing after page reload');
     await page.screenshot({path: '/tmp/nah-after-reload.png'});
     assert.equal(errors.length, 0, 'Browser JavaScript/console errors: ' + JSON.stringify(errors));
-    console.log('PASS: real Chromium WebGL2 boot, shelter exit, Save button, IndexedDB snapshot and browser reload persistence');
+    console.log('PASS: real Chromium WebGL2 boot, in-shelter movement, Save button, IndexedDB snapshot and browser reload persistence');
   } finally {
     if (errors.length) console.log('Browser console errors:', JSON.stringify(errors));
     await browser.close();

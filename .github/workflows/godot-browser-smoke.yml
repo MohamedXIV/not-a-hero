@@ -1,5 +1,5 @@
 name: Godot P0 real browser smoke
-# Regression: assert Save button actually persists post-autosave movement.
+# Regression: assert Save button persists new movement without relying on transition autosave.
 
 # Web export templates are enormous. This job only runs when the
 # browser-test workflow itself changes, not on every gameplay commit.
