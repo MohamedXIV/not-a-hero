@@ -9,6 +9,7 @@ const EXIT_POSITION: Vector2 = Vector2(330, 443)
 
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var workbench: Node2D = $Workbench
+@onready var chest: Node2D = $StorageChest
 
 
 func _ready() -> void:
@@ -57,6 +58,16 @@ func _add_furniture_collision(footprint: Rect2) -> void:
     add_child(body)
 
 
+func get_interaction_hint() -> String:
+    if yuna.position.distance_to(EXIT_POSITION) < 62.0:
+        return "E — Leave Little Nest"
+    if yuna.position.distance_to(chest.position) < 70.0:
+        return str(chest.call("get_interaction_label"))
+    if yuna.position.distance_to(workbench.position) < 92.0:
+        return str(workbench.call("get_interaction_label"))
+    return ""
+
+
 func _physics_process(_delta: float) -> void:
     yuna.position = yuna.position.clamp(Vector2(85, 120), Vector2(580, 455))
 
@@ -66,6 +77,9 @@ func _process(_delta: float) -> void:
     if Input.is_action_just_pressed("interact"):
         if yuna.position.distance_to(EXIT_POSITION) < 62.0:
             transition_requested.emit("outdoors")
+        elif yuna.position.distance_to(chest.position) < 70.0:
+            chest.call("interact", Input.is_action_pressed("sprint"))
+            GameSession.save_to_disk()
         elif yuna.position.distance_to(workbench.position) < 92.0:
             workbench.call("interact")
             GameSession.save_to_disk()

@@ -3,6 +3,9 @@ extends Node2D
 
 @export var persistent_id: StringName = &"world/ash_flats/scrap_cache_01"
 @export var loot: Dictionary = {"scrap": 3, "wire": 1}
+@export var loot_table: LootTableDefinition
+
+var _rolled_loot: Dictionary = {}
 
 var looted: bool = false
 
@@ -10,6 +13,7 @@ var looted: bool = false
 func _ready() -> void:
     add_to_group("world_interactables")
     looted = GameSession.get_world_flag(persistent_id)
+    _rolled_loot = loot_table.roll(GameSession.world_seed, persistent_id) if loot_table != null else loot.duplicate(true)
     queue_redraw()
 
 
@@ -21,12 +25,15 @@ func interact() -> bool:
     if looted:
         GameSession.report("Nothing left in that cache.")
         return false
-    if not GameSession.bag.try_receive(loot):
+    if _rolled_loot.is_empty():
+        GameSession.report("Only dust in this compartment, Yuna.")
+        return false
+    if not GameSession.bag.try_receive(_rolled_loot):
         GameSession.report("Not enough room for those parts, Yuna.")
         return false
     looted = true
     GameSession.set_world_flag(persistent_id, true)
-    GameSession.report("Scrap and wiring. You can make something from this, Yuna.")
+    GameSession.report("A few useful parts. Good eyes, Yuna.")
     queue_redraw()
     return true
 

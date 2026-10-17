@@ -31,7 +31,8 @@ func _physics_process(delta: float) -> void:
         switch_weapon(&"rifle")
     if Input.is_action_just_pressed("reload"):
         start_reload()
-    if Input.is_action_pressed("fire"):
+    # Clicking the CanvasLayer Save button must not fire or waste a round.
+    if Input.is_action_pressed("fire") and get_viewport().gui_get_hovered_control() == null:
         shoot_at(get_global_mouse_position())
 
 

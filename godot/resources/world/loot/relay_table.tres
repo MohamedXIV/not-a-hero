@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="LootTableDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/loot_table_definition.gd" id="1_table"]
+[ext_resource type="Script" path="res://scripts/world/loot_entry_definition.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://resources/items/alloy.tres" id="3_alloy"]
+[ext_resource type="Resource" path="res://resources/items/scrap.tres" id="4_scrap"]
+
+[sub_resource type="Resource" id="1_alloy"]
+script = ExtResource("2_entry")
+item = ExtResource("3_alloy")
+weight = 5
+min_amount = 1
+max_amount = 2
+
+[sub_resource type="Resource" id="2_scrap"]
+script = ExtResource("2_entry")
+item = ExtResource("4_scrap")
+weight = 3
+min_amount = 2
+max_amount = 3
+
+[resource]
+script = ExtResource("1_table")
+table_id = &"relay_waste_alloys"
+draws = 2
+entries = Array[ExtResource("2_entry")]([SubResource("1_alloy"), SubResource("2_scrap")])

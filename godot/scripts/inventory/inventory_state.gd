@@ -3,9 +3,39 @@ extends RefCounted
 ## Inventory changes are transactional: validate a proposed whole state first.
 ## No scene or UI dependencies. Unit-count capacity is deliberately small for P1.
 
-const CAPACITY: int = 24
+const DEFAULT_CAPACITY: int = 24
 
 var _items: Dictionary = {}
+var _capacity: int = DEFAULT_CAPACITY
+
+
+func _init(capacity: int = DEFAULT_CAPACITY) -> void:
+    _capacity = maxi(1, capacity)
+
+
+func total_units() -> int:
+    var total: int = 0
+    for amount: Variant in _items.values():
+        total += int(amount)
+    return total
+
+
+func capacity() -> int:
+    return _capacity
+
+
+func try_transfer_all(destination: InventoryState) -> bool:
+    if destination == null or destination == self or _items.is_empty():
+        return false
+    var merged: Dictionary = destination.snapshot()
+    for item_id: Variant in _items.keys():
+        merged[item_id] = int(merged.get(item_id, 0)) + int(_items[item_id])
+    if not destination._valid(merged):
+        return false
+    # Both inventories change only after the merged state has passed validation.
+    destination._items = merged
+    _items.clear()
+    return true
 
 
 func quantity(item_id: StringName) -> int:
@@ -88,4 +118,4 @@ func _valid(raw: Dictionary) -> bool:
         if float(raw[key]) != float(count) or count <= 0 or count > 99:
             return false
         total += count
-    return total <= CAPACITY
+    return total <= _capacity

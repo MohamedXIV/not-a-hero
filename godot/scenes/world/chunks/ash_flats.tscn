@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
 
@@ -7,6 +7,9 @@
 [ext_resource type="PackedScene" path="res://scenes/world/salvage_cache.tscn" id="3_salvage"]
 
 [ext_resource type="PackedScene" path="res://scenes/actors/robots/neutral_maintainer.tscn" id="4_neutral"]
+
+[ext_resource type="PackedScene" path="res://scenes/world/salvage_cache.tscn" id="5_dynamic"]
+[ext_resource type="Resource" path="res://resources/world/loot/ash_table.tres" id="6_loot"]
 
 [node name="AshFlatsChunk" type="Node2D"]
 script = ExtResource("1_chunk")
@@ -19,3 +22,8 @@ position = Vector2(510, 285)
 position = Vector2(400, 515)
 [node name="NeutralMaintainer" parent="." instance=ExtResource("4_neutral")]
 position = Vector2(540, 142)
+
+[node name="ExtraSalvage" parent="." instance=ExtResource("5_dynamic")]
+position = Vector2(245, 505)
+persistent_id = &"world/ash_flats/salvage_02"
+loot_table = ExtResource("6_loot")

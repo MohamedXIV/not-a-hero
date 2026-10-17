@@ -15,16 +15,20 @@ func _check() -> void:
     session.set("outdoor_position", Vector2(1470.0, 290.0))
     var bag: InventoryState = session.get("bag") as InventoryState
     _assert_ok(bag.try_receive({"scrap": 3, "wire": 1}), "inventory accepts valid loot")
+    var storage: InventoryState = session.get("storage") as InventoryState
+    _assert_ok(storage.try_receive({"capacitor": 6, "alloy": 4}), "storage holds supplies")
     var snapshot: Dictionary = session.call("snapshot")
     _assert_ok(snapshot.get("world_flags", {}).get("world/ash_flats/relay_01", false), "switch included in snapshot")
 
     session.call("set_world_flag", &"world/ash_flats/relay_01", false)
     session.set("current_level", "shelter")
     bag.try_spend(&"scrap", 3)
+    storage.try_spend(&"alloy", 4)
     _assert_ok(session.call("restore_snapshot", snapshot), "valid snapshot accepted")
     _assert_ok(session.call("get_world_flag", &"world/ash_flats/relay_01"), "world switch restored")
     _assert_ok(session.get("current_level") == "outdoors", "current level restored")
     _assert_ok((session.get("bag") as InventoryState).quantity(&"scrap") == 3, "inventory restored")
+    _assert_ok((session.get("storage") as InventoryState).quantity(&"alloy") == 4, "storage restored")
     _assert_ok(session.get("outdoor_position") == Vector2(1470.0, 290.0), "global player coordinate restored")
 
     var invalid: Dictionary = snapshot.duplicate(true)
@@ -33,6 +37,10 @@ func _check() -> void:
     _assert_ok(not session.call("restore_snapshot", invalid), "invalid switch rejected")
     _assert_ok(session.call("snapshot") == before, "invalid save did not partially mutate state")
 
+    invalid = snapshot.duplicate(true)
+    invalid["storage"] = {"alloy": 2.4}
+    _assert_ok(not session.call("restore_snapshot", invalid), "invalid storage rejected")
+    _assert_ok(session.call("snapshot") == before, "invalid storage never partially mutates")
     invalid = snapshot.duplicate(true)
     invalid["version"] = 999
     _assert_ok(not session.call("restore_snapshot", invalid), "incompatible version rejected")

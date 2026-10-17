@@ -1,11 +1,19 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
 
 [ext_resource type="PackedScene" path="res://scenes/actors/robots/survey_guard.tscn" id="2_guard"]
+
+[ext_resource type="PackedScene" path="res://scenes/world/salvage_cache.tscn" id="3_dynamic"]
+[ext_resource type="Resource" path="res://resources/world/loot/cable_table.tres" id="4_loot"]
 
 [node name="CableEdgeChunk" type="Node2D"]
 script = ExtResource("1_chunk")
 style = 1
 [node name="SurveyGuard" parent="." instance=ExtResource("2_guard")]
 position = Vector2(245, 320)
+
+[node name="ElectronicsCache" parent="." instance=ExtResource("3_dynamic")]
+position = Vector2(425, 520)
+persistent_id = &"world/cable_forest/cache_01"
+loot_table = ExtResource("4_loot")
