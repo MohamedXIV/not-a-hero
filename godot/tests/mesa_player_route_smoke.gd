@@ -188,9 +188,20 @@ func _exercise_route(method: String) -> bool:
 
 
 func _tap(action_name: String) -> void:
-    Input.action_press(action_name)
+    # Route a genuine mapped physical key event, as a player's keyboard does.
+    # Synthetic action_press can miss the just-pressed edge in headless frames.
+    var key_code: Key = KEY_Q if action_name == "mesa_repair" else KEY_E
+    var down := InputEventKey.new()
+    down.physical_keycode = key_code
+    down.pressed = true
+    Input.parse_input_event(down)
     await get_tree().process_frame
-    Input.action_release(action_name)
+    await get_tree().process_frame
+    var up := InputEventKey.new()
+    up.physical_keycode = key_code
+    up.pressed = false
+    Input.parse_input_event(up)
+    await get_tree().process_frame
     await get_tree().process_frame
 
 
