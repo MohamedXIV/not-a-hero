@@ -70,6 +70,16 @@ const BARKS: Dictionary = {
         "lines": ["An empty press still keeps time. Who's conducting, Yuna?",
                   "No operators. And yet it cycles. Watch the rhythm, Yuna."]
     },
+    "noticed_east_feeder": {
+        "priority": 49, "cooldown": 60.0,
+        "lines": ["That feeder heads into the rock. Someone hid the labels, Yuna.",
+                  "Current doesn't disappear into stone for no reason. Right, Yuna?"]
+    },
+    "noticed_return_manifold": {
+        "priority": 49, "cooldown": 60.0,
+        "lines": ["A return line buried in that shelf? That's odd, Yuna.",
+                  "The machines wore a track into the rock. What were they after?"]
+    },
     "noticed_basin": {
         "priority": 49, "cooldown": 60.0,
         "lines": ["That's flowing uphill. Pipes don't do that alone, Yuna.",

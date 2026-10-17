@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
 
@@ -9,6 +9,8 @@
 
 [ext_resource type="PackedScene" path="res://scenes/world/observation_marker.tscn" id="5_observation"]
 [ext_resource type="Resource" path="res://resources/discoveries/cable_scarred_junction.tres" id="6_discovery"]
+
+[ext_resource type="Resource" path="res://resources/discoveries/cable_eastbound_feeder.tres" id="7_lead"]
 
 [node name="CableEdgeChunk" type="Node2D"]
 script = ExtResource("1_chunk")
@@ -24,3 +26,8 @@ loot_table = ExtResource("4_loot")
 [node name="ScuffedJunction" parent="." instance=ExtResource("5_observation")]
 position = Vector2(90, 420)
 discovery = ExtResource("6_discovery")
+
+[node name="EastboundFeeder" parent="." instance=ExtResource("5_observation")]
+position = Vector2(535, 460)
+discovery = ExtResource("7_lead")
+visual_style = 1

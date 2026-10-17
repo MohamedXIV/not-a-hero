@@ -213,9 +213,9 @@ func _update_notebook_display() -> void:
     _notebook_display.text += "What I saw:\n%s\n\nMaybe:\n%s\n\nCould try:\n%s\n\n" % [
         found.observation, found.hypothesis, found.personal_plan
     ]
-    var idea: String = GameSession.notebook.inference()
-    if not idea.is_empty():
-        _notebook_display.text += "Thinking about both findings:\n%s\n\n" % idea
+    var ideas: Array[String] = GameSession.notebook.related_inferences(id)
+    if not ideas.is_empty():
+        _notebook_display.text += "Connections I can make:\n%s\n\n" % "\n".join(ideas)
     _notebook_display.text += "J next  |  P pin/unpin  |  N close"
 
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/chunk_visual.gd" id="1_chunk"]
 [ext_resource type="PackedScene" path="res://scenes/actors/robots/coolant_servitor.tscn" id="2_servitor"]
@@ -8,6 +8,8 @@
 [ext_resource type="Resource" path="res://resources/discoveries/basin_reverse_flow.tres" id="6_discovery"]
 
 [ext_resource type="PackedScene" path="res://scenes/world/machine_event_site.tscn" id="7_site"]
+
+[ext_resource type="Resource" path="res://resources/discoveries/basin_return_manifold.tres" id="8_lead"]
 
 [node name="CoolantBasinChunk" type="Node2D"]
 script = ExtResource("1_chunk")
@@ -29,3 +31,8 @@ discovery = ExtResource("6_discovery")
 position = Vector2(431, 461)
 region_id = &"coolant_basin"
 worker_scene = ExtResource("2_servitor")
+
+[node name="BuriedReturnManifold" parent="." instance=ExtResource("5_observation")]
+position = Vector2(556, 270)
+discovery = ExtResource("8_lead")
+visual_style = 2
