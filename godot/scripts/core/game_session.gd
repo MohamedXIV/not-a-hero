@@ -3,7 +3,7 @@ extends Node
 ## P0 currently models position, clock and persistent world switches only.
 
 const SAVE_PATH: String = "user://not_a_hero_save.json"
-const SAVE_VERSION: int = 5
+const SAVE_VERSION: int = 6
 const InputBindings = preload("res://scripts/core/input_bindings.gd")
 
 var current_level: String = "shelter"
@@ -15,6 +15,7 @@ var world_flags: Dictionary = {}
 var bag: InventoryState = InventoryState.new()
 var storage: InventoryState = InventoryState.new(120)
 var condition: YunaCondition = YunaCondition.new()
+var home_supplies: Dictionary = {"meals": 4, "water": 6}
 var combat_state: Dictionary = {
     "selected": "pistol",
     "pistol": {"clip": 8, "reserve": 32},
@@ -31,6 +32,37 @@ func _ready() -> void:
 func advance_time(delta: float) -> void:
     # Approximate 24 real minutes per in-game day, provisional balance.
     day_minutes = fposmod(day_minutes + delta, 1440.0)
+
+
+func use_field_dressing() -> bool:
+    var part: String = condition.next_untreated_part()
+    if part.is_empty():
+        report("No untreated injury, Yuna.")
+        return false
+    if not bag.try_spend(&"dressing", 1):
+        report("You need a field dressing, Yuna.")
+        return false
+    condition.apply_dressing(part)
+    report("Easy. That's the %s dressed. Rest when you can." % part)
+    return true
+
+
+func eat_at_home() -> bool:
+    if int(home_supplies["meals"]) <= 0 or not condition.eat_meal():
+        report("No meal needed or prepared, Yuna.")
+        return false
+    home_supplies["meals"] = int(home_supplies["meals"]) - 1
+    report("A warm meal. Nice work, Yuna.")
+    return true
+
+
+func drink_at_home() -> bool:
+    if int(home_supplies["water"]) <= 0 or not condition.drink_water():
+        report("Not thirsty, or the water canister's empty.")
+        return false
+    home_supplies["water"] = int(home_supplies["water"]) - 1
+    report("Water first. Think clearly, Yuna.")
+    return true
 
 
 func sleep_at_home() -> void:
@@ -68,6 +100,7 @@ func snapshot() -> Dictionary:
         "inventory": bag.snapshot(),
         "storage": storage.snapshot(),
         "condition": condition.snapshot(),
+        "home_supplies": home_supplies.duplicate(true),
         "combat_state": combat_state.duplicate(true),
     }
 
@@ -107,6 +140,19 @@ func restore_snapshot(data: Dictionary) -> bool:
     var restored_condition := YunaCondition.new()
     if not restored_condition.restore_snapshot(raw_condition as Dictionary):
         return false
+    var supplies: Variant = data.get("home_supplies")
+    if typeof(supplies) != TYPE_DICTIONARY:
+        return false
+    var restored_supplies: Dictionary = {}
+    for supply_id: String in ["meals", "water"]:
+        var quantity: Variant = supplies.get(supply_id)
+        if typeof(quantity) != TYPE_FLOAT and typeof(quantity) != TYPE_INT:
+            return false
+        if not is_finite(float(quantity)) or float(quantity) != float(int(quantity)):
+            return false
+        if int(quantity) < 0 or int(quantity) > 50:
+            return false
+        restored_supplies[supply_id] = int(quantity)
     var stored_combat: Variant = data.get("combat_state", null)
     if typeof(stored_combat) != TYPE_DICTIONARY:
         return false
@@ -136,6 +182,7 @@ func restore_snapshot(data: Dictionary) -> bool:
     bag = restored_bag
     storage = restored_storage
     condition = restored_condition
+    home_supplies = restored_supplies
     combat_state = next_combat
     return true
 

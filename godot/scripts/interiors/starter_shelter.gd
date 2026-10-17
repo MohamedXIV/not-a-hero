@@ -7,6 +7,8 @@ signal transition_requested(destination: String)
 const LightFactory = preload("res://scripts/presentation/light_factory.gd")
 const EXIT_POSITION: Vector2 = Vector2(330, 443)
 const BED_USE_POINT: Vector2 = Vector2(215, 279)
+const COOK_POINT: Vector2 = Vector2(196, 369)
+const WATER_POINT: Vector2 = Vector2(290, 151)
 
 @onready var yuna: CharacterBody2D = $Yuna
 @onready var workbench: Node2D = $Workbench
@@ -64,6 +66,10 @@ func get_interaction_hint() -> String:
         return "E — Leave Little Nest"
     if yuna.position.distance_to(BED_USE_POINT) < 62.0:
         return "E — Rest in your own bed"
+    if yuna.position.distance_to(COOK_POINT) < 48.0:
+        return "E — Eat a prepared meal"
+    if yuna.position.distance_to(WATER_POINT) < 38.0:
+        return "E — Drink clean water"
     if yuna.position.distance_to(chest.position) < 70.0:
         return str(chest.call("get_interaction_label"))
     if yuna.position.distance_to(workbench.position) < 92.0:
@@ -87,6 +93,12 @@ func _interact_nearby() -> void:
     elif yuna.position.distance_to(BED_USE_POINT) < 62.0:
         GameSession.sleep_at_home()
         GameSession.save_to_disk()
+    elif yuna.position.distance_to(COOK_POINT) < 48.0:
+        if GameSession.eat_at_home():
+            GameSession.save_to_disk()
+    elif yuna.position.distance_to(WATER_POINT) < 38.0:
+        if GameSession.drink_at_home():
+            GameSession.save_to_disk()
     elif yuna.position.distance_to(chest.position) < 70.0:
         chest.call("interact", Input.is_action_pressed("sprint"))
         GameSession.save_to_disk()
@@ -116,3 +128,5 @@ func _draw() -> void:
     draw_rect(Rect2(EXIT_POSITION - Vector2(34, 12), Vector2(68, 24)), Color("#332b2a"))
     draw_line(EXIT_POSITION - Vector2(34, 12), EXIT_POSITION + Vector2(34, -12), Color("#f6be73"), 3.0)
     draw_circle(Vector2(150, 225), 8, Color("#ffddaa"))
+    draw_circle(WATER_POINT, 13, Color("#477e85"))
+    draw_circle(WATER_POINT, 6, Color("#b0d6d1"))
