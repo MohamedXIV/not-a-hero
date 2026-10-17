@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/actors/yuna_controller.gd" id="1_yuna"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_feet"]
+radius = 12.0
+
+[node name="Yuna" type="CharacterBody2D"]
+z_index = 10
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_yuna")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_feet")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -24)
+zoom = Vector2(1.45, 1.45)
+position_smoothing_enabled = true
+position_smoothing_speed = 7.0
