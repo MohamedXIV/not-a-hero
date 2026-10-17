@@ -13,6 +13,7 @@ const DEFINITIONS: Dictionary = {
     "basin_return_manifold": preload("res://resources/discoveries/basin_return_manifold.tres"),
     "mesa_service_tracks": preload("res://resources/discoveries/mesa_service_tracks.tres"),
     "mesa_return_carrier": preload("res://resources/discoveries/mesa_return_carrier.tres"),
+    "mesa_thermal_archive": preload("res://resources/discoveries/mesa_thermal_archive.tres"),
 }
 
 var _seen: Array[String] = []
@@ -77,6 +78,12 @@ const CONNECTIONS: Array[Dictionary] = [
         "id": "unanswered_service",
         "sources": ["mesa_service_tracks", "mesa_return_carrier"],
         "text": "Those hatch-side service grooves and the live return carrier match a repeated maintenance approach. Perhaps the machines are answering an old service call, but who sent it and what lies below are still unknown.",
+        "mesa_lead": false,
+    },
+    {
+        "id": "fragile_temperature",
+        "sources": ["mesa_return_carrier", "mesa_thermal_archive"],
+        "text": "The service reply and the low gallery both involve careful environmental maintenance. Maybe someone wanted the temperature protected, but this doesn't identify who or what was once inside.",
         "mesa_lead": false,
     },
 ]

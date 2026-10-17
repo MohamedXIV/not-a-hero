@@ -4,6 +4,7 @@ extends Node2D
 const OUTDOORS: PackedScene = preload("res://scenes/world/outdoors.tscn")
 const STARTER_SHELTER: PackedScene = preload("res://scenes/interiors/starter_shelter.tscn")
 const MESA_REFUGE: PackedScene = preload("res://scenes/interiors/mesa_refuge.tscn")
+const MESA_DEPTH: PackedScene = preload("res://scenes/interiors/mesa_depth_chamber.tscn")
 
 var _level: Node2D
 var _hud: Label
@@ -60,6 +61,8 @@ func _process(delta: float) -> void:
     _hud.text = "NOT A HERO | %02d:%02d | WASD move | Shift sprint | E interact | N notebook | Tab condition | F6 save\n" % [hour, minute]
     if GameSession.current_level == "shelter":
         _hud.text += "Little Nest"
+    elif GameSession.current_level == "mesa_depth":
+        _hud.text += "Mesa Refuge — lower service gallery"
     elif GameSession.current_level == "mesa":
         var room_label: String = "first night spent" if GameSession.mesa.first_night_spent else (
             "sun court restored" if GameSession.mesa.court_restored() else (
@@ -138,6 +141,8 @@ func _open_level(level_id: String) -> void:
         template = STARTER_SHELTER
     elif level_id == "mesa":
         template = MESA_REFUGE
+    elif level_id == "mesa_depth":
+        template = MESA_DEPTH
     _level = template.instantiate() as Node2D
     add_child(_level)
     _level.connect("transition_requested", Callable(self, "_on_transition"))
@@ -148,10 +153,11 @@ func _on_transition(target: String) -> void:
     if now - _last_transition_msec < 450:
         return
     _last_transition_msec = now
+    var previous_level: String = GameSession.current_level
     _open_level(target)
     if target == "shelter":
         GameSession.speak(&"home_return")
-    elif target == "mesa":
+    elif target == "mesa" and previous_level != "mesa_depth":
         GameSession.speak(&"mesa_first_look")
     GameSession.save_to_disk()
 

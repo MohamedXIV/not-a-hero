@@ -120,6 +120,21 @@ const BARKS: Dictionary = {
         "lines": ["There. Let them follow a safer line, Yuna.",
                   "You didn't have to hurt it. Just changed where it listens."]
     },
+    "mesa_depth_opened": {
+        "priority": 65, "cooldown": 90.0,
+        "lines": ["More below? You can look, Yuna. You can also leave.",
+                  "No weapons. Just a service stair. Still... careful, Yuna."]
+    },
+    "mesa_thermal_archive": {
+        "priority": 70, "cooldown": 145.0,
+        "lines": ["It's empty, Yuna. But something kept it warm all this time.",
+                  "No name. No message. Only a temperature. Why, Yuna?"]
+    },
+    "mesa_depth_warm": {
+        "priority": 59, "cooldown": 80.0,
+        "lines": ["You don't need to know everything to be gentle, Yuna.",
+                  "There. Warm enough. Nothing needs saving today."]
+    },
     "mesa_rear_nook": {
         "priority": 63, "cooldown": 110.0,
         "lines": ["A screen and a blanket. Small things count, Yuna.",

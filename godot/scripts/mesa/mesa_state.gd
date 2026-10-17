@@ -22,6 +22,9 @@ var rear_nook_prepared: bool = false
 var first_night_spent: bool = false
 var service_signal_inspected: bool = false
 var service_signal_diverted: bool = false
+var depth_open: bool = false
+var depth_archive_read: bool = false
+var depth_warm: bool = false
 
 
 func is_open() -> bool:
@@ -172,6 +175,30 @@ func toggle_service_signal() -> bool:
     return true
 
 
+func unlock_depth() -> bool:
+    # The mechanical service release always works once the rear coolant
+    # gallery is safe. A diverted service return is a faster optional route.
+    if not flow_online() or depth_open:
+        return false
+    depth_open = true
+    return true
+
+
+func read_depth_archive() -> bool:
+    if not depth_open or depth_archive_read:
+        return false
+    depth_archive_read = true
+    return true
+
+
+func set_depth_warmth() -> bool:
+    # Real reversible physical environment, never a repeatable loot source.
+    if not depth_open or not depth_archive_read:
+        return false
+    depth_warm = not depth_warm
+    return true
+
+
 func snapshot() -> Dictionary:
     return {
         "inspected": inspected,
@@ -189,6 +216,9 @@ func snapshot() -> Dictionary:
         "first_night_spent": first_night_spent,
         "service_signal_inspected": service_signal_inspected,
         "service_signal_diverted": service_signal_diverted,
+        "depth_open": depth_open,
+        "depth_archive_read": depth_archive_read,
+        "depth_warm": depth_warm,
     }
 
 
@@ -266,6 +296,18 @@ func restore_snapshot(raw: Dictionary) -> bool:
         return false
     if (bool(raw_signal) and String(flow_mode).is_empty()) or (bool(raw_diversion) and not bool(raw_signal)):
         return false
+    var raw_depth: Variant = raw.get("depth_open")
+    var raw_archive: Variant = raw.get("depth_archive_read")
+    var raw_warm: Variant = raw.get("depth_warm")
+    if (typeof(raw_depth) != TYPE_BOOL or typeof(raw_archive) != TYPE_BOOL
+            or typeof(raw_warm) != TYPE_BOOL):
+        return false
+    if bool(raw_depth) and String(flow_mode).is_empty():
+        return false
+    if bool(raw_archive) and not bool(raw_depth):
+        return false
+    if bool(raw_warm) and not bool(raw_archive):
+        return false
     inspected = bool(looked)
     manual_progress = int(steps)
     access_method = String(method)
@@ -281,6 +323,9 @@ func restore_snapshot(raw: Dictionary) -> bool:
     first_night_spent = bool(raw_first_night)
     service_signal_inspected = bool(raw_signal)
     service_signal_diverted = bool(raw_diversion)
+    depth_open = bool(raw_depth)
+    depth_archive_read = bool(raw_archive)
+    depth_warm = bool(raw_warm)
     return true
 
 
