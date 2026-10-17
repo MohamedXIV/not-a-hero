@@ -20,6 +20,7 @@ const GROWING_BED: Vector2 = Vector2(513, 449)
 @onready var rear_nook: MesaRearNook = $RearNook
 @onready var carrier_panel: MesaCarrierPanel = $CarrierPanel
 @onready var depth_lift: MesaDepthLift = $DepthLift
+var _interact_held: bool = false
 
 var _court_light: PointLight2D
 var _utility_light: PointLight2D
@@ -93,7 +94,10 @@ func _process(_delta: float) -> void:
     if _last_court_ready != GameSession.mesa.court_ready:
         _last_court_ready = GameSession.mesa.court_ready
         queue_redraw()
-    if Input.is_action_just_pressed("interact") and not decorator.edit_mode:
+    if not Input.is_action_pressed("interact"):
+        _interact_held = false
+    if Input.is_action_just_pressed("interact") and not _interact_held and not decorator.edit_mode:
+        _interact_held = true
         _interact_nearby()
     if Input.is_action_just_pressed("mesa_repair") and not decorator.edit_mode:
         _use_spare_part()
