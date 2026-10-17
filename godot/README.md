@@ -73,3 +73,12 @@ True wounds/first aid, composure, resource-driven ammo crafting, enemy populatio
 - Rug is floor decor; lantern has a true Godot PointLight2D and a physical collider, both rebuilt from the authoritative placements when reloading the shelter.
 - Pickup returns the exact piece to the inventory only when space permits. Placements persist in validated save schema v8, with exact coordinates and invalid-save rejection.
 - Assets are provisional color blocks; the approved art style still needs human review. Further crafted furnishings/comfort uses may be added in P2 later.
+
+## P2e — small renewable life-support and quiet routine
+
+- Passive, **bounded** Little Nest life support uses *in-game elapsed minutes*: condenser matures **one water portion per 240 minutes** (up to four uncollected); the home nutrient culture yields **one meal + one fiber every 480 minutes** (up to two uncollected). Nothing respawns because a scene reloads, and reaching the capacity halts further production.
+- The condenser lives by the right wall and the culture tray near the left lower wall: approach and press **E** to collect. Finished meals and clean water are still consumed at the original cooker/water vessel. Home stockpiles cap at twelve portions each. Harvesting culture needs one free bag slot for fiber; if it is full, *no materials or food are lost*. Both stations retain their progress after game save and reload.
+- In the workbench, **C** makes one Field Dressing from two harvested culture fibers; **E** still makes the relay fuse. Existing composure/focus gate applies to both crafts.
+- A nearby familiar radio offers **E — unwind**, a 20-minute short personal ritual. It gently improves composure/fatigue and has a 180-minute cooldown. It never produces random stealth warnings, consumes supplies or grants compounding furniture happiness multipliers.
+- Sleeping advances six in-game hours of production. GameSave v9 persists progress, ready reserves and radio cooldown. Temporary visuals and story/audio remain unapproved.
+- This is a forgiving renewable safety floor for cozy play, **not a complete ecological/nutrient/energy simulation**. Tuning remains a future human playtest task.
