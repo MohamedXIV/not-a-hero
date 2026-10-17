@@ -10,6 +10,16 @@ var outdoor_position: Vector2 = Vector2(160.0, 330.0)
 var shelter_position: Vector2 = Vector2(340.0, 365.0)
 var day_minutes: float = 8.0 * 60.0
 var world_seed: int = 1573
+# Stable identifier -> authoritative world change, independent from loaded chunk scenes.
+var world_flags: Dictionary = {}
+
+
+func get_world_flag(key: StringName) -> bool:
+    return bool(world_flags.get(String(key), false))
+
+
+func set_world_flag(key: StringName, value: bool) -> void:
+    world_flags[String(key)] = value
 
 
 func advance_time(delta: float) -> void:
@@ -25,6 +35,7 @@ func save_to_disk() -> bool:
         "shelter_position": [shelter_position.x, shelter_position.y],
         "day_minutes": day_minutes,
         "world_seed": world_seed,
+        "world_flags": world_flags.duplicate(true),
     }
     var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
     if file == null:
@@ -58,6 +69,14 @@ func load_from_disk() -> bool:
     outdoor_position = Vector2(float(outdoor[0]), float(outdoor[1]))
     shelter_position = Vector2(float(shelter[0]), float(shelter[1]))
     day_minutes = fposmod(float(data.get("day_minutes", 480.0)), 1440.0)
+    var flags: Variant = data.get("world_flags", {})
+    if typeof(flags) != TYPE_DICTIONARY:
+        return false
+    # Validate values before trusting a save. P0 changes are simple boolean switches.
+    for flag_id: Variant in flags.keys():
+        if typeof(flag_id) != TYPE_STRING or typeof(flags[flag_id]) != TYPE_BOOL:
+            return false
     world_seed = int(data.get("world_seed", 1573))
+    world_flags = (flags as Dictionary).duplicate(true)
     current_level = loaded_level
     return true
