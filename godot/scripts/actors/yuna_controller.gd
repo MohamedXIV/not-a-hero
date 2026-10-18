@@ -1,7 +1,10 @@
 extends CharacterBody2D
 ## Provisional readable Yuna shape. Replace with animated artwork after art-style spike.
 ## Movement collision uses feet; future hit locations are a separate injury concern.
+## Alternate drawn prototypes only activate inside the optional art study.
 
+const ArtStudyYuna = preload("res://scripts/presentation/art_study_yuna.gd")
+@export_range(0, 2) var art_study_treatment: int = 0
 @export var walking_speed: float = 158.0
 @export var sprint_multiplier: float = 1.35
 
@@ -71,6 +74,9 @@ func _advance_ordinary_tic(delta: float) -> void:
 
 
 func _draw() -> void:
+    if art_study_treatment > 0:
+        ArtStudyYuna.draw_study(self, art_study_treatment, _walking, _facing_right, _tic_visible_for > 0.0)
+        return
     var step_offset: float = sin(Time.get_ticks_msec() * 0.014) * 2.0 if _walking else 0.0
     # Feet/shadow, boots, soft tunic, pale face, auburn hair and braid.
     draw_ellipse_shadow()

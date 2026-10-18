@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/presentation/visual_study.gd" id="1_study"]
+[ext_resource type="PackedScene" path="res://scenes/actors/yuna.tscn" id="2_yuna"]
+
+[node name="VisualStudy" type="Node2D"]
+script = ExtResource("1_study")
+
+[node name="Ambient" type="CanvasModulate" parent="."]
+color = Color(0.69, 0.66, 0.63, 1)
+
+[node name="Yuna" parent="." instance=ExtResource("2_yuna")]
+position = Vector2(365, 398)
