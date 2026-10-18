@@ -8,11 +8,12 @@ const MESA_DEPTH: PackedScene = preload("res://scenes/interiors/mesa_depth_chamb
 
 var _level: Node2D
 var _hud: Label
-var _status_detail: Label
+var _status_detail: RichTextLabel
 var _subtitle: Label
-var _notebook_display: Label
+var _notebook_display: RichTextLabel
 var _notebook_page: int = 0
-var _controls_display: Label
+var _controls_display: RichTextLabel
+var _panel_backdrop: ColorRect
 var _interaction_display: Label
 var _feedback_display: Label
 var _save_button: Button
@@ -52,7 +53,7 @@ func _process(delta: float) -> void:
         GameSession.report("Self-talk subtitles: %s" % ("on" if GameSession.voice.subtitles_enabled else "off"))
         GameSession.save_to_disk()
     if Input.is_action_just_pressed("open_notebook"):
-        _notebook_display.visible = not _notebook_display.visible
+        _toggle_overlay(_notebook_display)
     if _notebook_display.visible:
         if Input.is_action_just_pressed("next_notebook"):
             _notebook_page += 1
@@ -65,7 +66,7 @@ func _process(delta: float) -> void:
     if Input.is_action_just_pressed("quick_save"):
         _write_save()
     if Input.is_action_just_pressed("open_controls"):
-        _controls_display.visible = not _controls_display.visible
+        _toggle_overlay(_controls_display)
     var hour: int = int(GameSession.day_minutes / 60.0)
     var minute: int = int(GameSession.day_minutes) % 60
     _hud.text = "NOT A HERO    %02d:%02d    H — Controls\n" % [hour, minute]
@@ -104,7 +105,7 @@ func _process(delta: float) -> void:
     if state.hydration < 28.0 or state.nourishment < 24.0 or state.fatigue > 72.0:
         _hud.text += "\n" + ("Thirsty " if state.hydration < 28.0 else "") + ("Hungry " if state.nourishment < 24.0 else "") + ("Tired" if state.fatigue > 72.0 else "")
     if Input.is_action_just_pressed("status_panel"):
-        _status_detail.visible = not _status_detail.visible
+        _toggle_overlay(_status_detail)
     if _status_detail.visible:
         _status_detail.text = "YUNA — CONDITION\nComposure: %s (%.0f)\nStamina: %.0f\nRest: %.0f/100 tired\nNourishment: %.0f\nHydration: %.0f\n%s\n\nTab closes" % [
             state.composure_label(), state.composure, state.stamina, state.fatigue,
@@ -123,18 +124,18 @@ func _process(delta: float) -> void:
             "On" if GameSession.voice.subtitles_enabled else "Off",
         ]
     var spoken: String = GameSession.voice.subtitle()
-    _subtitle.visible = not spoken.is_empty()
+    _subtitle.visible = not spoken.is_empty() and not _panel_backdrop.visible
     if _subtitle.visible:
         _subtitle.text = "Yuna: " + spoken
     var note: String = GameSession.current_feedback()
     if Time.get_ticks_msec() < _save_message_until:
         note = _save_message
     _feedback_display.text = note
-    _feedback_display.visible = not note.is_empty()
+    _feedback_display.visible = not note.is_empty() and not _panel_backdrop.visible
     _interaction_display.text = ""
     if is_instance_valid(_level) and _level.has_method("get_interaction_hint"):
         _interaction_display.text = str(_level.call("get_interaction_hint"))
-    _interaction_display.visible = not _interaction_display.text.is_empty()
+    _interaction_display.visible = not _interaction_display.text.is_empty() and not _panel_backdrop.visible
 
 
 func _open_level(level_id: String) -> void:
@@ -181,13 +182,22 @@ func _build_hud() -> void:
     _hud.add_theme_font_size_override("font_size", 17)
     overlay.add_child(_hud)
 
+    # Only one scrollable reading panel is active at a time. The backdrop
+    # makes important text legible over moving machine geometry.
+    _panel_backdrop = ColorRect.new()
+    _panel_backdrop.name = "ReadingBackdrop"
+    _panel_backdrop.color = Color(0.045, 0.065, 0.075, 0.94)
+    _panel_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _panel_backdrop.visible = false
+    overlay.add_child(_panel_backdrop)
+
     # Optional concise controls. Long key legends no longer cover the art
     # every moment of exploration, but remain accessible with H.
-    _controls_display = Label.new()
+    _controls_display = RichTextLabel.new()
     _controls_display.name = "Controls"
     _controls_display.position = Vector2(22, 123)
-    _controls_display.add_theme_font_size_override("font_size", 19)
-    _controls_display.add_theme_color_override("font_color", Color("#f5dfba"))
+    _controls_display.add_theme_font_size_override("normal_font_size", 19)
+    _controls_display.add_theme_color_override("default_color", Color("#f5dfba"))
     _controls_display.add_theme_color_override("font_shadow_color", Color("#151d22"))
     _controls_display.add_theme_constant_override("shadow_offset_x", 2)
     _controls_display.add_theme_constant_override("shadow_offset_y", 2)
@@ -222,11 +232,11 @@ func _build_hud() -> void:
     _interaction_display.add_theme_constant_override("shadow_offset_y", 2)
     overlay.add_child(_interaction_display)
 
-    _status_detail = Label.new()
+    _status_detail = RichTextLabel.new()
     _status_detail.name = "ConditionDetails"
     _status_detail.position = Vector2(18, 205)
-    _status_detail.add_theme_font_size_override("font_size", 20)
-    _status_detail.add_theme_color_override("font_color", Color("#f5dfba"))
+    _status_detail.add_theme_font_size_override("normal_font_size", 20)
+    _status_detail.add_theme_color_override("default_color", Color("#f5dfba"))
     _status_detail.visible = false
     overlay.add_child(_status_detail)
 
@@ -245,13 +255,13 @@ func _build_hud() -> void:
     _subtitle.visible = false
     overlay.add_child(_subtitle)
 
-    _notebook_display = Label.new()
+    _notebook_display = RichTextLabel.new()
     _notebook_display.name = "PersonalNotebook"
     _notebook_display.position = Vector2(380, 82)
     _notebook_display.size = Vector2(575, 410)
     _notebook_display.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    _notebook_display.add_theme_font_size_override("font_size", 19)
-    _notebook_display.add_theme_color_override("font_color", Color("#f7ddaf"))
+    _notebook_display.add_theme_font_size_override("normal_font_size", 19)
+    _notebook_display.add_theme_color_override("default_color", Color("#f7ddaf"))
     _notebook_display.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
     _notebook_display.add_theme_constant_override("shadow_offset_x", 2)
     _notebook_display.add_theme_constant_override("shadow_offset_y", 2)
@@ -268,6 +278,62 @@ func _build_hud() -> void:
     _save_button.position = Vector2(get_viewport_rect().size.x - 128.0, 15.0)
     _save_button.pressed.connect(_write_save)
     overlay.add_child(_save_button)
+    get_viewport().size_changed.connect(_layout_hud)
+    _layout_hud()
+
+
+func _toggle_overlay(target: RichTextLabel) -> void:
+    var show_panel: bool = not target.visible
+    _controls_display.visible = false
+    _status_detail.visible = false
+    _notebook_display.visible = false
+    target.visible = show_panel
+    _panel_backdrop.visible = show_panel
+    if show_panel:
+        target.scroll_to_line(0)
+
+
+func _layout_hud() -> void:
+    _layout_hud_for_size(get_viewport_rect().size)
+
+
+func _layout_hud_for_size(view_size: Vector2) -> void:
+    # The same geometry can be tested at narrow viewports without faking
+    # screen sizes or altering Godot's real CanvasLayer/scene transforms.
+    var compact: bool = view_size.x < 900.0 or view_size.y < 560.0
+    var margin: float = 14.0 if compact else 22.0
+    _hud.position = Vector2(margin, 10.0 if compact else 16.0)
+    _hud.size = Vector2(maxf(140.0, view_size.x - (148.0 if compact else 190.0)), 150.0)
+    _hud.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _hud.add_theme_font_size_override("font_size", 14 if compact else 17)
+
+    _save_button.size = Vector2(82.0, 34.0) if compact else Vector2(104.0, 42.0)
+    _save_button.position = Vector2(view_size.x - margin - _save_button.size.x, margin)
+
+    _feedback_display.position = Vector2(margin, view_size.y - (162.0 if compact else 176.0))
+    _feedback_display.size = Vector2(view_size.x - 2.0 * margin, 52.0)
+    _feedback_display.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _feedback_display.add_theme_font_size_override("font_size", 16 if compact else 19)
+
+    _subtitle.position = Vector2(margin, view_size.y - (107.0 if compact else 115.0))
+    _subtitle.size = Vector2(view_size.x - 2.0 * margin, 57.0 if compact else 75.0)
+    _subtitle.add_theme_font_size_override("font_size", 18 if compact else 23)
+
+    _interaction_display.position = Vector2(margin, view_size.y - (46.0 if compact else 46.0))
+    _interaction_display.size = Vector2(view_size.x - 2.0 * margin, 40.0)
+    _interaction_display.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    _interaction_display.add_theme_font_size_override("font_size", 17 if compact else 20)
+
+    var panel_top: float = minf(120.0 if not compact else 104.0, view_size.y * 0.25)
+    var panel_width: float = minf(760.0, view_size.x - margin * 2.0)
+    _panel_backdrop.position = Vector2((view_size.x - panel_width) / 2.0, panel_top)
+    _panel_backdrop.size = Vector2(panel_width, maxf(88.0, view_size.y - panel_top - margin))
+    for panel: RichTextLabel in [_controls_display, _status_detail, _notebook_display]:
+        panel.position = _panel_backdrop.position + Vector2(14.0, 12.0)
+        panel.size = _panel_backdrop.size - Vector2(28.0, 24.0)
+        panel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        panel.scroll_active = true
+        panel.add_theme_font_size_override("normal_font_size", 15 if compact else 19)
 
 
 func _update_notebook_display() -> void:
