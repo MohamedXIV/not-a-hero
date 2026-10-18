@@ -55,6 +55,17 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1 pngjs@7.0.0
           npx playwright install --with-deps chromium --only-shell
+      - name: Test real compact HUD and browser Save at three 16:9 viewports
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory godot/build/web > /tmp/http-hud.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          node godot/tests/browser_hud_smoke.cjs 2>&1 | tee /tmp/browser-hud.log
+          grep -q 'PASS: Chromium WebGL2 real HUD resize 1280x720 + 960x540 + 640x360, overlays and IndexedDB Save' /tmp/browser-hud.log
+          test -s /tmp/nah-hud-640x360-notebook.png
+          test -s /tmp/nah-hud-960x540-controls.png
       - name: Test fresh v17, physically inspect and warm deep Mesa, IndexedDB reload
         shell: bash
         run: |
@@ -68,17 +79,6 @@ jobs:
           test -s /tmp/nah-depth-warm.png
           test -s /tmp/nah-depth-warm-reload.png
           test -s /tmp/nah-mesa-return.png
-      - name: Test real compact HUD and browser Save at three 16:9 viewports
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m http.server 8765 --bind 127.0.0.1 --directory godot/build/web > /tmp/http-hud.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID || true' EXIT
-          node godot/tests/browser_hud_smoke.cjs 2>&1 | tee /tmp/browser-hud.log
-          grep -q 'PASS: Chromium WebGL2 real HUD resize 1280x720 + 960x540 + 640x360, overlays and IndexedDB Save' /tmp/browser-hud.log
-          test -s /tmp/nah-hud-640x360-notebook.png
-          test -s /tmp/nah-hud-960x540-controls.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:
