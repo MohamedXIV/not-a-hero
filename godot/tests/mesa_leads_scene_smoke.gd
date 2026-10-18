@@ -96,7 +96,7 @@ func _check() -> void:
     await get_tree().process_frame
     var main: Node2D = (load("res://scenes/main.tscn") as PackedScene).instantiate() as Node2D
     add_child(main)
-    var ui: Label = main.get("_notebook_display") as Label
+    var ui: RichTextLabel = main.get("_notebook_display") as RichTextLabel
     if ui == null:
         _fail("Main scene has no notebook panel")
         return
