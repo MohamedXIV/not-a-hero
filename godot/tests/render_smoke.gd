@@ -31,7 +31,25 @@ func _capture() -> void:
     await RenderingServer.frame_post_draw
     if not _save_viewport_image(directory.path_join("outdoors_dusk.png")):
         return
-    print("PASS: rendered indoor and outdoor screenshots using Compatibility renderer")
+    game.queue_free()
+    await get_tree().process_frame
+
+    # Both treatments render the SAME active scene at identical camera settings.
+    var study: Node2D = (load("res://scenes/presentation/visual_study.tscn") as PackedScene).instantiate() as Node2D
+    add_child(study)
+    study.call("set_treatment", 1)
+    study.call("set_night", false)
+    await RenderingServer.frame_post_draw
+    await RenderingServer.frame_post_draw
+    if not _save_viewport_image(directory.path_join("visual_study_graphic_day.png")):
+        return
+    study.call("set_treatment", 2)
+    study.call("set_night", true)
+    await RenderingServer.frame_post_draw
+    await RenderingServer.frame_post_draw
+    if not _save_viewport_image(directory.path_join("visual_study_soft_night.png")):
+        return
+    print("PASS: rendered shelter, outdoor and both same-scene art treatments using Compatibility renderer")
     get_tree().quit(0)
 
 
