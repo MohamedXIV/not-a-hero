@@ -107,22 +107,25 @@ func _process(delta: float) -> void:
     if Input.is_action_just_pressed("status_panel"):
         _toggle_overlay(_status_detail)
     if _status_detail.visible:
-        _status_detail.text = "YUNA — CONDITION\nComposure: %s (%.0f)\nStamina: %.0f\nRest: %.0f/100 tired\nNourishment: %.0f\nHydration: %.0f\n%s\n\nTab closes" % [
+        var detail_text: String = ""
+        detail_text = "YUNA — CONDITION\nComposure: %s (%.0f)\nStamina: %.0f\nRest: %.0f/100 tired\nNourishment: %.0f\nHydration: %.0f\n%s\n\nTab closes" % [
             state.composure_label(), state.composure, state.stamina, state.fatigue,
             state.nourishment, state.hydration, state.injury_description()
         ]
-        _status_detail.text += "\nDressings: %d  |  Meals: %d  |  Water: %d" % [
+        detail_text += "\nDressings: %d  |  Meals: %d  |  Water: %d" % [
             GameSession.bag.quantity(&"dressing"),
             int(GameSession.home_supplies["meals"]),
             int(GameSession.home_supplies["water"]),
         ]
-        _status_detail.text += "\nCondenser: %d ready | Culture: %d ready" % [
+        detail_text += "\nCondenser: %d ready | Culture: %d ready" % [
             GameSession.production.ready_water, GameSession.production.ready_culture
         ]
-        _status_detail.text += "\nV: Incidental remarks %s  |  B: Subtitles %s" % [
+        detail_text += "\nV: Incidental remarks %s  |  B: Subtitles %s" % [
             "On" if GameSession.voice.incidental_enabled else "Off",
             "On" if GameSession.voice.subtitles_enabled else "Off",
         ]
+        if _status_detail.text != detail_text:
+            _status_detail.text = detail_text
     var spoken: String = GameSession.voice.subtitle()
     _subtitle.visible = not spoken.is_empty() and not _panel_backdrop.visible
     if _subtitle.visible:
@@ -337,24 +340,29 @@ func _layout_hud_for_size(view_size: Vector2) -> void:
 
 
 func _update_notebook_display() -> void:
+    var page_text: String = ""
     var notes: Array[String] = GameSession.notebook.observed_ids()
     if notes.is_empty():
-        _notebook_display.text = "YUNA'S NOTEBOOK\n\nNothing written yet. Look closely at the world.\n\nN close"
+        page_text = "YUNA'S NOTEBOOK\n\nNothing written yet. Look closely at the world.\n\nN close"
+        if _notebook_display.text != page_text:
+            _notebook_display.text = page_text
         return
     _notebook_page = posmod(_notebook_page, notes.size())
     var id: String = notes[_notebook_page]
     var found: DiscoveryDefinition = GameSession.notebook.definition(id)
-    _notebook_display.text = "YUNA'S NOTEBOOK    %d/%d\n%s%s\n\n" % [
+    page_text = "YUNA'S NOTEBOOK    %d/%d\n%s%s\n\n" % [
         _notebook_page + 1, notes.size(), found.title,
         "  [Pinned]" if GameSession.notebook.pinned == id else ""
     ]
-    _notebook_display.text += "What I saw:\n%s\n\nMaybe:\n%s\n\nCould try:\n%s\n\n" % [
+    page_text += "What I saw:\n%s\n\nMaybe:\n%s\n\nCould try:\n%s\n\n" % [
         found.observation, found.hypothesis, found.personal_plan
     ]
     var ideas: Array[String] = GameSession.notebook.related_inferences(id)
     if not ideas.is_empty():
-        _notebook_display.text += "Connections I can make:\n%s\n\n" % "\n".join(ideas)
-    _notebook_display.text += "J next  |  P pin/unpin  |  N close"
+        page_text += "Connections I can make:\n%s\n\n" % "\n".join(ideas)
+    page_text += "J next  |  P pin/unpin  |  N close"
+    if _notebook_display.text != page_text:
+        _notebook_display.text = page_text
 
 
 func _write_save() -> void:
