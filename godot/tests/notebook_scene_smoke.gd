@@ -65,7 +65,7 @@ func _check() -> void:
     # The player can actually open and read the UI; it cannot show unknown notes.
     var main: Node2D = (load("res://scenes/main.tscn") as PackedScene).instantiate() as Node2D
     add_child(main)
-    var label: Label = main.get("_notebook_display") as Label
+    var label: RichTextLabel = main.get("_notebook_display") as RichTextLabel
     if label == null:
         _fail("Player's notebook panel missing")
         return
