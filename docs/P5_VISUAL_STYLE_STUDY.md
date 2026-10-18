@@ -25,7 +25,7 @@ The two versions share **the identical constructed environment**: warm portable 
 
 **Both are a limited procedural exploration**, so neither can demonstrate actual painted brushwork, final animation fidelity, texture import/filter choices, real multi-layer shadow assets or the cost of a complete production illustration pipeline. They are not being sold as finished art or fully representative pixel-art/painterly candidates. If both fail to meet the brief, the next revision should use a small set of authored production-like sprites in this *same* test harness.
 
-The automated Compatibility renderer records `visual_study_graphic_day.png` and `visual_study_soft_night.png` on the same sample scene. Because those screenshots also differ by illumination, **they are not an apples-to-apples style benchmark**: a reviewer should toggle Z/X at the same T setting while moving. The screenshots only verify renderer/camera/cold-warm display.
+The automated Compatibility renderer captures **four** frames from this exact playable scene at identical player/camera positions: `visual_study_graphic_day.png`, `visual_study_soft_day.png`, `visual_study_graphic_night.png` and `visual_study_soft_night.png`. Compare **Graphic Day vs Soft Day** or **Graphic Night vs Soft Night**. The actual reviewer should still toggle Z/X while moving because an image does not validate animation, input legibility or expressive posing.
 
 ## Acceptance gate
 

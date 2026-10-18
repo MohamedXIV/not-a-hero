@@ -150,6 +150,8 @@ jobs:
           test -s godot/build/screenshots/starter_shelter.png
           test -s godot/build/screenshots/outdoors_dusk.png
           test -s godot/build/screenshots/visual_study_graphic_day.png
+          test -s godot/build/screenshots/visual_study_soft_day.png
+          test -s godot/build/screenshots/visual_study_graphic_night.png
           test -s godot/build/screenshots/visual_study_soft_night.png
           file godot/build/screenshots/*.png
       - uses: actions/upload-artifact@v4

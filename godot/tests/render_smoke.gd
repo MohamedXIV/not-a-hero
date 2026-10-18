@@ -44,12 +44,22 @@ func _capture() -> void:
     if not _save_viewport_image(directory.path_join("visual_study_graphic_day.png")):
         return
     study.call("set_treatment", 2)
+    await RenderingServer.frame_post_draw
+    await RenderingServer.frame_post_draw
+    if not _save_viewport_image(directory.path_join("visual_study_soft_day.png")):
+        return
+    study.call("set_treatment", 1)
     study.call("set_night", true)
+    await RenderingServer.frame_post_draw
+    await RenderingServer.frame_post_draw
+    if not _save_viewport_image(directory.path_join("visual_study_graphic_night.png")):
+        return
+    study.call("set_treatment", 2)
     await RenderingServer.frame_post_draw
     await RenderingServer.frame_post_draw
     if not _save_viewport_image(directory.path_join("visual_study_soft_night.png")):
         return
-    print("PASS: rendered shelter, outdoor and both same-scene art treatments using Compatibility renderer")
+    print("PASS: rendered shelter, outdoor and same-scene day/night A/B style comparisons")
     get_tree().quit(0)
 
 
