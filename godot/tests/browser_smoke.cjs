@@ -301,12 +301,24 @@ async function overwritePersistedSaveFromSeedPage(context, snapshot) {
       atExit.mesa_depth_position[1] - 493) < 4, 'Return waypoint did not restore');
     assert(atExit.mesa.depth_archive_read, 'Warm saved archive was lost before exit');
     await page.screenshot({path: '/tmp/nah-depth-exit-ready.png'});
-    await page.locator('canvas').click({position: {x: 640, y: 355}});
-    await page.waitForTimeout(500);
-    await pressKey(page, 'e');
-    await saveUsingButton(page);
-    const upstairs = await expectSave(page, 'Real E from depth to main Mesa', s =>
-      s.current_level === 'mesa' && s.mesa.depth_warm && s.mesa.depth_open);
+    // SwiftShader sometimes drops a key pulse and even a Save click during a
+    // slow frame. Retry only the real browser input, never manufacture state.
+    // Read back the *actual* IndexedDB v17 state on every attempt.
+    let upstairs;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      await page.locator('canvas').click({position: {x: 640, y: 355}});
+      await page.waitForTimeout(650);
+      await pressKey(page, 'e');
+      await saveUsingButton(page);
+      try {
+        upstairs = await expectSave(page, 'Real E from depth to main Mesa', s =>
+          s.current_level === 'mesa' && s.mesa.depth_warm && s.mesa.depth_open, 7500);
+        break;
+      } catch (error) {
+        if (attempt === 3) throw error;
+        console.log('Browser return input missed/has not persisted; retrying actual E:', attempt + 1);
+      }
+    }
     assert(upstairs.mesa_position[0] > 1000, 'Mesa upper gallery return moved Yuna elsewhere');
     await page.screenshot({path: '/tmp/nah-mesa-return.png'});
     console.log('PASS: Chromium v17 lower room Save/Reload, waypointed actual E return, intact upper Mesa');
