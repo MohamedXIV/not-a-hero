@@ -5,7 +5,7 @@ ARCHIVE="blender-${VER}-linux-x64.tar.xz"
 BIN_DIR="/tmp/nah-blender"
 mkdir -p "$BIN_DIR" public
 echo "Downloading official Blender ${VER} for camera-only blockout..."
-curl --fail --location --retry 3 --connect-timeout 25 -o "$BIN_DIR/$ARCHIVE" "https://download.blender.org/release/Blender5.2/$ARCHIVE"
+curl --fail --location --retry 3 --connect-timeout 25 -o "$BIN_DIR/$ARCHIVE" "https://mirror.blender.org/release/Blender5.2/$ARCHIVE"
 tar -xJf "$BIN_DIR/$ARCHIVE" -C "$BIN_DIR"
 BIN="$BIN_DIR/blender-${VER}-linux-x64/blender"
 "$BIN" --version | head -3
